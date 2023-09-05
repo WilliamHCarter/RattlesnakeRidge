@@ -29,7 +29,7 @@ class AgentConversation:
     def __init__(self, agent: Agent, prompt: str, llm):
         self.agent = agent
         prompt = prompt.format(**agent._raw)
-
+        self.prompt = prompt
         self.conversation = LLMChain(
             llm=llm,
             prompt=PromptTemplate.from_template(prompt),

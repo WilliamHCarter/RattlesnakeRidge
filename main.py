@@ -13,7 +13,7 @@ load_dotenv()
 #For local builds, go to .env.template file and follow directions.
 api_key = os.environ.get('LLM_API_KEY')
 model = 'gpt-3.5-turbo'
-# llm = ChatOpenAI(openai_api_key=api_key, model=model)
+#llm = ChatOpenAI(openai_api_key=api_key, model=model)
 llm = FakeListChatModel(verbose=True, responses=['Howdy, stranger. What brings you to these parts today?'])
 
 
@@ -27,3 +27,5 @@ response = conversation.talk(user_message)
 print(f'< {response}')
 
 print(conversation.agent._memory.load_memory_variables({})['history'])
+print('\n\n\n')
+print(conversation.prompt)
