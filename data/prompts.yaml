@@ -1,0 +1,15 @@
+---
+single_person_conversation: |-
+  You are {name}. {long_description}
+
+  Here is the visitor now to ask you a question, converse with them given your situation.
+
+  Remember, you are simply the {short_name}. You will receive a history of your previous conversations and the current response from the vistor. Once you respond to the visitor, they will respond back to you and so on, so there is no need to speak for them.
+
+  Previous conversation:
+  {{history}}
+
+  New visitor response: {{message}}
+  Response:
+other_example: |-
+  This is another example prompt.
