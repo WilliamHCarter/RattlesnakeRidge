@@ -4,10 +4,14 @@ import os
 import yaml
 from agents import Agent, AgentConversation
 
+def load_dict(filename: str) -> dict:
+    with open(filename, 'r') as file:
+        raw = file.read()
+    return yaml.safe_load(raw)
+
 #===== Setup the env and chat model =====#
-with open('data/prompts.yaml', 'r') as file:
-    raw = file.read()
-prompts = yaml.safe_load(raw)
+prompts = load_dict('data/prompts.yaml')
+setting = load_dict('data/setting.yaml')
 load_dotenv()
 
 #For local builds, go to .env.template file and follow directions.
@@ -19,7 +23,7 @@ llm = FakeListChatModel(verbose=True, responses=['Howdy, stranger. What brings y
 
 #===== Test Conversation with Flint =====#
 flint_agent = Agent(datafile='data/flint.yaml')
-conversation = AgentConversation(flint_agent, prompts['single_person_conversation'], llm)
+conversation = AgentConversation(flint_agent, prompts['single_person_conversation'], setting, llm)
 # user_message = input("What would you like to say? ")
 user_message = "Hello there!"
 print(f'> {user_message}')
@@ -28,4 +32,4 @@ print(f'< {response}')
 
 print(conversation.agent._memory.load_memory_variables({})['history'])
 print('\n\n\n')
-print(conversation.prompt)
+print(conversation.formatted_prompt)

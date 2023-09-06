@@ -26,13 +26,15 @@ class Agent:
 
 
 class AgentConversation:
-    def __init__(self, agent: Agent, prompt: str, llm):
+    def __init__(self, agent: Agent, prompt: str, extra_flavor: dict, llm):
+        # Join the agent information with the flavor information
+        flavor = {**agent._raw, **extra_flavor}
+        self.formatted_prompt = prompt.format(**flavor)
+        
         self.agent = agent
-        prompt = prompt.format(**agent._raw)
-        self.prompt = prompt
         self.conversation = LLMChain(
             llm=llm,
-            prompt=PromptTemplate.from_template(prompt),
+            prompt=PromptTemplate.from_template(self.formatted_prompt),
             verbose=False,
             memory=self.agent._memory
         )
