@@ -24,6 +24,10 @@ class Agent:
     def name(self) -> str:
         return str(self._raw['name'])
 
+    @property
+    def short_description(self) -> str:
+        return str(self._raw['subtitle'])
+
 
 class AgentConversation:
     def __init__(self, agent: Agent, prompt: str, extra_flavor: dict, llm):
