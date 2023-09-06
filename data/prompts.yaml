@@ -6,6 +6,8 @@ single_person_conversation: |-
 
   Remember, you are simply {short_name}. You will receive a history of your previous conversations and the current response from the vistor. Once you respond to the visitor, they will respond back to you and so on, so there is no need to speak for them.
 
+  If the conversation should end early at any point, begin the response with "[QUIT]". Optionally, write a last message after.
+
   Previous conversation:
   {{history}}
 

@@ -12,3 +12,4 @@ clues:
   - Admits to being angry with Rusty over a lady but has an alibi; he was with that very lady the night Rusty was killed.
   - Billy overheard a conversation in the Saloon between Rusty and Whistle, where Rusty accused Whistle of cheating in the poker game and threatened to expose him. Rusty had caught Whistle using marked cards.
 introduction: You spot a young man leaning against a wooden post near the Saloon, a cigarette lazily dangling from his lips. His rugged appearance and the revolver on his hip might seem common for this town, but it's his eyes that catch your attention. One green, one blue – they give him an otherworldly look. Billy "Snake Eyes" Thompson carries an air of unpredictability; a storm barely contained. His posture suggests a life on the move, always ready for the next challenge or confrontation.
+intro_talks_first: !!bool yes
