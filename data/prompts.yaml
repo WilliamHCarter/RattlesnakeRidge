@@ -11,8 +11,8 @@ single_person_conversation: |-
   Previous conversation:
   {{history}}
 
-  New visitor response: {{message}}
-  Response:
+  {{message}}
+  {name}:
 
 #Testing longer prompt integrating more aspects of the story.
 single_person_conversation_complex: |-
@@ -37,8 +37,8 @@ single_person_conversation_complex: |-
 
   Remember, you are simply {short_name}. Once you respond to the visitor, they will respond back to you and so on, so there is no need to speak for them.
 
-  New visitor response: {{message}}
-  Response:
+  {{message}}
+  {name}:
 
 other_example: |-
   This is another example prompt.
