@@ -8,8 +8,8 @@ opinions: |
   Whistle: Billy enjoys the games and the atmosphere of the Saloon. He sees Whistle as a fellow rogue, someone who knows how to play the game of life. However, he's also been burned by Whistle's manipulations and remains cautious.
   Clara: Billy is conflicted about Clara. Her kindness confuses him, as he's not used to genuine concern. He's a bit suspicious of her intentions but can't help but feel a warmth towards her, something he hasn't felt in a long time.
   Flint: Billy resents Flint's authority and the way he's always being watched. He sees the Marshal as a representation of all the things he's running from. Yet, there's an underlying respect, a recognition of Flint's skills and his position in the town.
-clues: 
-  - Admits to being angry with Rusty over a lady but has an alibi; he was with that very lady the night Rusty was killed.
-  - Billy overheard a conversation in the Saloon between Rusty and Whistle, where Rusty accused Whistle of cheating in the poker game and threatened to expose him. Rusty had caught Whistle using marked cards.
+clues: >
+  Admits to being angry with Rusty over a lady but has an alibi; he was with that very lady the night Rusty was killed.
+  Billy overheard a conversation in the Saloon between Rusty and Whistle, where Rusty accused Whistle of cheating in the poker game and threatened to expose him. Rusty had caught Whistle using marked cards.
 introduction: You spot a young man leaning against a wooden post near the Saloon, a cigarette lazily dangling from his lips. His rugged appearance and the revolver on his hip might seem common for this town, but it's his eyes that catch your attention. One green, one blue – they give him an otherworldly look. Billy "Snake Eyes" Thompson carries an air of unpredictability; a storm barely contained. His posture suggests a life on the move, always ready for the next challenge or confrontation.
 intro_talks_first: !!bool yes

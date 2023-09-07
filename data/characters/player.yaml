@@ -5,7 +5,6 @@ subtitle: ""
 short_description: ""
 long_description: ""
 opinions: ""
-clues: 
-  - ""
+clues: ""
 introduction: ""
 intro_talks_first: !!bool no
