@@ -4,7 +4,8 @@ from langchain.chat_models import ChatOpenAI, FakeListChatModel
 import os
 import yaml
 
-from agents import Agent, AgentConversation
+from agents.agent import Agent, PlayerAgent
+from agents.conversation import Conversation, ConversationResponse
 
 def load_dict(filename: str) -> dict:
     with open(filename, 'r') as file:
@@ -22,10 +23,10 @@ model = 'gpt-3.5-turbo'
 
 # Dummy name haha
 player_name = 'Jimmy'
-
 character_names = ['flint', 'billy', 'clara', 'whistle']
 
 agents = [Agent(datafile=f'data/characters/{name}.yaml') for name in character_names]
+player = PlayerAgent(datafile='data/characters/player.yaml')
 remaining_intro = copy(agents)
 
 for _ in range(4):
@@ -48,28 +49,31 @@ for _ in range(4):
     print(selected_agent.introduction)
     print()
 
-    # Make the conversation
+    # Set the Model
     llm = FakeListChatModel(
         verbose=True, 
         responses=[f"Hi there, I'm {selected_agent.name}", 'That is not nice', '[QUIT] This conversation is over.']
     )
     #llm = ChatOpenAI(openai_api_key=api_key, model=model)
-    conversation = AgentConversation(selected_agent, prompts['single_person_conversation'], setting, llm)
 
-    # If the character talks first, prompt them
-    if selected_agent.does_talk_first_on_first_meeting:
-        response = conversation.talk('[Enters the room]')
-        if response.text:
-            print(f'{selected_agent.name}: {response.text}')
 
-    # Have a time-bounded conversation
+    # Have a simple time-bounded conversation
+    agent_order = [selected_agent, player] if selected_agent.does_talk_first_on_first_meeting else [player, selected_agent]
+    conversation = Conversation(agent_order, prompts['single_person_conversation_complex'], setting, llm)
     responses_left = 6
     while responses_left > 0:
-        player_message = input(f'{player_name}: ')
+        #DO THIS BETTER, this pokes the AI if it speaks first, else we deal with the player and skip to AI
+        if agent_order == [selected_agent, player] and responses_left == 6:
+            message = '[Enters the room]'
+        else:
+            message = input(f'{player_name}: ')
+            responses = conversation.converse(message)
 
-        response = conversation.talk(player_message)
-        if response.text: print(f'{selected_agent.name}: {response.text}')
-        if response.conversation_ends: responses_left = 0
+        #Normal response conversation and message printing   
+        responses = conversation.converse(message)
+        for i, r in enumerate(responses):
+            if r.text: print(f'{conversation.agents[i].name}: {r.text}')
+            if r.conversation_ends: responses_left = 0
 
         responses_left -= 1
 
