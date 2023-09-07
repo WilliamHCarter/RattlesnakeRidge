@@ -78,3 +78,4 @@ for _ in range(4):
         responses_left -= 1
 
     print("\nThe conversation has ended.")
+    print(selected_agent._memory.chat_memory.messages)
