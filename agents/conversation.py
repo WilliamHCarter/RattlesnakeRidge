@@ -8,6 +8,7 @@ from agents.agent import Agent, PlayerAgent
 @dataclass
 class ConversationResponse:
     text: str
+    agent: str
     conversation_ends: bool    
 
 class Conversation:
@@ -39,8 +40,8 @@ class Conversation:
         terminate_prefix = '[QUIT]'
         if text.startswith(terminate_prefix):
             text = text[len(terminate_prefix):].lstrip()
-            return ConversationResponse(text, True)
-        return ConversationResponse(text, False)
+            return ConversationResponse(text, self.agents[0].name, True)
+        return ConversationResponse(text, self.agents[0].name, False)
 
     #Cycles the agents and conversations to the next one. 
     #(We cycle and not iterate so that the conversation order can be easily observed externally by inspecting the Conversation object)
@@ -63,7 +64,7 @@ class Conversation:
             # If we've looped back to the player, we return. Cycling will be handled on re-entry.
             if isinstance(self.agents[0], PlayerAgent):
                 return responses
-            
+   
             # Let the current agent talk
             res, mes = self.__talk(carried_message)
             responses.append(res)
@@ -78,7 +79,7 @@ class Conversation:
         if (isinstance(self.conversations[0], PlayerAgent)):
             raise ValueError("PlayerAgent shoudn't talk via this method");
         full_response = self.conversations[0]({"message": input_message})
-        response = self.__parse_response(full_response['text'])
+        response:ConversationResponse = self.__parse_response(full_response['text'])
 
         # We need to remove and rename the AIMessage that gets added automatically
         # and re-add it as a ChatMessage with the correct label

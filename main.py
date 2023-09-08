@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import yaml
 from agents.agent import Agent, PlayerAgent
-from test_scenes import intro_scene
+from test_scenes import intro_scene, multiagent_scene
 
 
 def load_dict(filename: str) -> dict:
@@ -21,6 +21,7 @@ api_key = os.environ.get('LLM_API_KEY')
 model = 'gpt-3.5-turbo'
 
 intro_scene(prompts, setting)
+#multiagent_scene(prompts, setting)
 
 
 

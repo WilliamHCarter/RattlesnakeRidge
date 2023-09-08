@@ -45,7 +45,7 @@ def intro_scene(prompts: dict, setting: dict):
         conversation = Conversation(agent_order, prompts['single_person_conversation_complex'], setting, llm)
         responses_left = 6
         while responses_left > 0:
-            #DO THIS BETTER, this pokes the AI if it speaks first, else we deal with the player and skip to AI
+            #DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
             if agent_order == [selected_agent, player] and responses_left == 6:
                 message = '[Enters the room]'
             else:
@@ -53,9 +53,45 @@ def intro_scene(prompts: dict, setting: dict):
             #Normal response conversation and message printing 
             responses = conversation.converse(message)
             for i, r in enumerate(responses):
-                if r.text: print(f'{conversation.agents[i].name}: {r.text}')
+                if r.text: print(f'{r.agent}: {r.text}')
                 if r.conversation_ends: responses_left = 0
 
             responses_left -= 1
 
-        print("\nThe conversation has ended.")
+        print("\nThe conversation has ended.\n")
+
+def multiagent_scene(prompts:dict, setting:dict):
+    # Dummy name heehee
+    player_name = 'Jammy'
+    character_names = ['flint', 'billy', 'clara', 'whistle']
+    agents = [Agent(datafile=f'data/characters/{name}.yaml') for name in character_names]
+    player = PlayerAgent(datafile='data/characters/player.yaml')
+    agent_order = agents + [player]
+    
+    # Set the Model
+    llm = FakeListChatModel(
+        verbose=True, 
+        responses=[f"Hi there, I'm somebody, check my nametag.", 'That is not nice', ' This conversation is over.']
+    )
+    #llm = ChatOpenAI(openai_api_key=api_key, model=model)
+    print("You are approached by Flint, Billy, and Clara. They want to talk to you.\n")
+    
+    #Another time-bound convo
+    responses_left = 6
+    conversation = Conversation(agent_order, prompts['single_person_conversation_complex'], setting, llm)
+    while responses_left > 0:
+        #DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
+        if responses_left == 6:
+            message = '[Enters the room]'
+        else:
+            message = input(f'{player_name}: ')
+        #Normal response conversation and message printing 
+        responses = conversation.converse(message)
+        for i, r in enumerate(responses):
+            if r.text: print(f'{r.agent}: {r.text}')
+            if r.conversation_ends: responses_left = 0
+
+        responses_left -= 1
+
+    print("\nThe conversation has ended as the sun was setting.\n")
+
