@@ -67,10 +67,9 @@ for _ in range(4):
             message = '[Enters the room]'
         else:
             message = input(f'{player_name}: ')
-            responses = conversation.converse(message)
-
-        #Normal response conversation and message printing   
+        #Normal response conversation and message printing 
         responses = conversation.converse(message)
+        print("resp count: ", len(responses))
         for i, r in enumerate(responses):
             if r.text: print(f'{conversation.agents[i].name}: {r.text}')
             if r.conversation_ends: responses_left = 0

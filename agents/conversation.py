@@ -42,19 +42,26 @@ class Conversation:
             return ConversationResponse(text, True)
         return ConversationResponse(text, False)
 
+    #Cycles the agents and conversations to the next one. 
+    #(We cycle and not iterate so that the conversation order can be easily observed externally by inspecting the Conversation object)
+    def cycle_agents(self):
+        curr = self.agents.pop(0)
+        self.agents.append(curr)
+        tmp = self.conversations.pop(0)
+        self.conversations.append(tmp)
 
     #Loops through each member of the conversation and allows them to speak.
     def converse(self, initial_message: str) -> ConversationResponse:
         carried_message = initial_message
         responses: list[ConversationResponse] = []
 
+        #Early check and cycle of player agent, since their message is pre-loaded as initial.
+        if isinstance(self.agents[0], PlayerAgent):
+                self.cycle_agents()
+
         while self.agents:
-            current_agent = self.agents[0]
-            if isinstance(current_agent, PlayerAgent):
-                self.agents.pop(0)
-                self.agents.append(current_agent)
-                tmp = self.conversations.pop(0)
-                self.conversations.append(tmp)                
+            # If we've looped back to the player, we return. Cycling will be handled on re-entry.
+            if isinstance(self.agents[0], PlayerAgent):
                 return responses
             
             # Let the current agent talk
@@ -63,12 +70,7 @@ class Conversation:
             for a in self.agents:
                 a._memory.chat_memory.add_message(mes)
 
-            # Put the current agent at the end of the list
-            self.agents.pop(0)
-            self.agents.append(current_agent)
-            tmp = self.conversations.pop(0)
-            self.conversations.append(tmp)
-
+            self.cycle_agents()
             carried_message = res.text
     
     #Makes a single agent speak given a message.
