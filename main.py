@@ -2,9 +2,10 @@ from copy import copy
 from dotenv import load_dotenv
 import os
 import yaml
+from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from agents.agent import Agent, PlayerAgent
-from test_scenes import intro_scene, multiagent_scene
-
+from test_scenes import test_select_scene, test_multiagent_scene
+from scenes import first_day_intro
 
 def load_dict(filename: str) -> dict:
     with open(filename, 'r') as file:
@@ -20,8 +21,17 @@ load_dotenv()
 api_key = os.environ.get('LLM_API_KEY')
 model = 'gpt-3.5-turbo'
 
-intro_scene(prompts, setting)
-#multiagent_scene(prompts, setting)
+# Set the Model
+llm = FakeListChatModel(
+    verbose=True, 
+    responses=[f"Hi there, I'm talking to you.", 'That is not nice', '[QUIT] This conversation is over.']
+)
+#llm = ChatOpenAI(openai_api_key=api_key, model=model)
 
+
+#===== Run Each Story Scene =====#
+#test_select_scene(prompts, setting)
+#multiagent_scene(prompts, setting)
+first_day_intro(llm, prompts, setting)
 
 
