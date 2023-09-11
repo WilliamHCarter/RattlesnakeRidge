@@ -42,3 +42,7 @@ To get started with this project, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
+3. Add API Key:
+
+   Create a file named `.env`, and paste the contents of `.env.template` into it.
+   Then, add your key to the `LLM_API_KEY` variable inside your new `.env` file.
