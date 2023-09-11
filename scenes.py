@@ -2,15 +2,9 @@ from copy import copy
 from agents.conversation import Conversation, ConversationResponse
 from agents.agent import Agent, PlayerAgent
 
-def first_day_intro(llm, prompts: dict, setting: dict):
-    # Dummy name haha
-    player_name = 'Jimmy'
-    character_names = ['flint', 'billy', 'clara', 'whistle']
-
-    agents = [Agent(datafile=f'data/characters/{name}.yaml') for name in character_names]
-    player = PlayerAgent(datafile='data/characters/player.yaml')
+def first_day_intro(llm, prompts: dict, setting: dict, agents:list[Agent], player:PlayerAgent):
+    
     remaining_intro = copy(agents)
-   
     print("\nAs the sun sets on the horizon, you ride into the dusty outpost of Rattlesnake Ridge. The villagers are gathered around the town center, murmuring about a heinous crime: a local prospector named Jeb, known for recently striking gold, has been found dead. Word is that his stash of gold is missing too. You decide to step in, and after introducing yourself, you have the option to speak to the main suspects: Whistle, Miss Clara, Marshal Flint, and Billy \"Snake Eyes\" Thompson. \n")
     for _ in range(4):
 

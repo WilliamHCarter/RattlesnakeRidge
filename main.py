@@ -28,10 +28,17 @@ llm = FakeListChatModel(
 )
 #llm = ChatOpenAI(openai_api_key=api_key, model=model)
 
+#===== Setup the agents =====#
+# Dummy name haha
+player_name = 'Jimmy'
+character_names = ['flint', 'billy', 'clara', 'whistle']
+
+agents = [Agent(datafile=f'data/characters/{name}.yaml') for name in character_names]
+player = PlayerAgent(datafile='data/characters/player.yaml')
 
 #===== Run Each Story Scene =====#
 #test_select_scene(prompts, setting)
 #multiagent_scene(prompts, setting)
-first_day_intro(llm, prompts, setting)
+first_day_intro(llm, prompts, setting, agents, player)
 
 
