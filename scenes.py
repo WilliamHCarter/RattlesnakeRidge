@@ -34,9 +34,9 @@ def first_day_intro(llm, prompts: dict, setting: dict, agents:list[Agent], playe
             if agent_order == [selected_agent, player] and responses_left == 6:
                 message = '[Enters the room]'
             else:
-                message = input(f'{player_name}: ')
+                message = input(f'{player.name}: ')
             #Normal response conversation and message printing 
-            responses = conversation.converse(message)
+            responses: list[ConversationResponse] = conversation.converse(message)
             for i, r in enumerate(responses):
                 if r.text: print(f'{r.agent}: {r.text}')
                 if r.conversation_ends: responses_left = 0
@@ -46,7 +46,26 @@ def first_day_intro(llm, prompts: dict, setting: dict, agents:list[Agent], playe
         print("\nThe conversation has ended.\n")
 
 def first_night_cutscene():
-    print("The moon is high when a piercing scream echoes through the night. Everyone rushes out to find Whistle's Saloon in disarray – a scuffle has occurred. You notice a bloodied poker card on the floor, the ace of spades. This might be a clue, but to what?")
+    print("The moon is high when a piercing scream echoes through the night. Everyone rushes out to find Whistle's Saloon in disarray – a scuffle has occurred. You notice a bloodied poker card on the floor, the ace of spades. This might be a clue, but to what? \n")
 
-def second_day_intro(llm, prompts: dict, setting: dict):
-    pass
+def second_day_intro(llm, prompts: dict, setting: dict, agents:list[Agent], player:PlayerAgent):
+    print("You are approached by Flint, Billy, and Clara. They want to talk to you.\n")
+    
+    #Another time-bound convo
+    responses_left = 6
+    conversation = Conversation(agents, prompts['single_person_conversation_complex'], setting, llm)
+    while responses_left > 0:
+        #DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
+        if responses_left == 6:
+            message = '[Enters the room]'
+        else:
+            message = input(f'{player.name}: ')
+        #Normal response conversation and message printing 
+        responses: list[ConversationResponse] = conversation.converse(message)
+        for i, r in enumerate(responses):
+            if r.text: print(f'{r.agent}: {r.text}')
+            if r.conversation_ends: responses_left = 0
+
+        responses_left -= 1
+
+    print("\nThe conversation has ended as the sun was setting.\n")

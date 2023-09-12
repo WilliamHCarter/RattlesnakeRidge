@@ -22,15 +22,14 @@ api_key = os.environ.get('LLM_API_KEY')
 model = 'gpt-3.5-turbo'
 
 # Set the Model
-llm = FakeListChatModel(
-    verbose=True, 
-    responses=[f"Hi there, I'm talking to you.", 'That is not nice', '[QUIT] This conversation is over.']
-)
-#llm = ChatOpenAI(openai_api_key=api_key, model=model)
+#llm = FakeListChatModel(
+#    verbose=True, 
+#    responses=[f"Hi there, I'm talking to you.", 'That is not nice', '[QUIT] This conversation is over.']
+#)
+llm = ChatOpenAI(openai_api_key=api_key, model=model)
 
 #===== Setup the agents =====#
 # Dummy name haha
-player_name = 'Jimmy'
 character_names = ['flint', 'billy', 'clara', 'whistle']
 
 agents = [Agent(datafile=f'data/characters/{name}.yaml') for name in character_names]
