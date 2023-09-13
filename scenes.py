@@ -49,11 +49,19 @@ def first_night_cutscene():
     print("The moon is high when a piercing scream echoes through the night. Everyone rushes out to find Whistle's Saloon in disarray – a scuffle has occurred. You notice a bloodied poker card on the floor, the ace of spades. This might be a clue, but to what? \n")
 
 def second_day_intro(llm, prompts: dict, setting: dict, agents:list[Agent], player:PlayerAgent):
-    print("You are approached by Flint, Billy, and Clara. They want to talk to you.\n")
+    print("Sunlight reveals tense faces. The townfolk have formed two groups. On one side, by the water trough, stands Whistle, looking ruffled, and Miss Clara, her comforting hand on his arm. They seem to be arguing with the other group, consisting of Marshal Flint and Billy, who are on the steps of the Marshal's Office. You need to make a choice quickly: which duo will you approach to get their side of the story?\n")
     
+    print("Who would you like to talk to?\n")
+    print("1: Billy and Clara")
+    print("2: Flint and Whistle\n")
+    b_and_c: list[Agent] = [agent for agent in agents if agent.name in ["Billy \"Snake Eyes\" Thompson", "Miss Clara"]]
+    f_and_w: list[Agent] = [agent for agent in agents if agent.name in ["Marshal Flint", "Whistle"]]
+    selection = int(input(f"Enter a number (1-2): ")) - 1
+    agent_order:list[Agent] = b_and_c if selection == 0 else f_and_w
+
     #Another time-bound convo
-    responses_left = 6
-    conversation = Conversation(agents, prompts['single_person_conversation_complex'], setting, llm)
+    responses_left = 12
+    conversation = Conversation(agent_order+[player], prompts['single_person_conversation_complex'], setting, llm)
     while responses_left > 0:
         #DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
         if responses_left == 6:
