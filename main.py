@@ -5,7 +5,7 @@ import yaml
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from agents.agent import Agent, PlayerAgent
 from test_scenes import test_select_scene, test_multiagent_scene
-from scenes import first_day_intro, first_night_cutscene, second_day_intro
+from scenes import first_day_intro, first_night_cutscene, second_day_intro, second_day_afternoon
 
 def load_dict(filename: str) -> dict:
     with open(filename, 'r') as file:
@@ -40,7 +40,7 @@ player = PlayerAgent(datafile='data/characters/player.yaml')
 #multiagent_scene(llm, prompts, setting, agents, player)
 #first_day_intro(llm, prompts, setting, agents, player)
 #first_night_cutscene()
-second_day_intro(llm, prompts, setting, agents, player)
-
+#second_day_intro(llm, prompts, setting, agents, player)
+second_day_afternoon(llm, prompts, setting, agents, player)
 
 

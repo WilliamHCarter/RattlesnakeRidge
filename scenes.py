@@ -76,4 +76,31 @@ def second_day_intro(llm, prompts: dict, setting: dict, agents:list[Agent], play
 
         responses_left -= 1
 
-    print("\nThe conversation has ended as the sun was setting.\n")
+    print("\nA sudden gunshot rings out, interrupting your conversation. a distant gunshot rings out, causing panic. The townsfolk scatter, heading to their homes or businesses to seek cover.\n")
+
+def second_day_afternoon(llm, prompts: dict, setting: dict, agents:list[Agent], player:PlayerAgent):
+    print("\nThe town is quieter now, and the townspeoples' nerves are on edge. You have the chance to speak to one more person in-depth. \n")
+    
+    # Select a person to talk to
+    print("Who would you like to talk to?")
+    for i, agent in enumerate(agents):
+        print(f'{str(i+1)}: {agent.name} -- {agent.short_description}')
+    selection = int(input(f"Enter a number (1-4): ")) - 1
+    print()
+    selected_agent = agents[selection]
+    print(f'\nTime to talk to {selected_agent.name}\n')
+
+    # Have a simple time-bounded conversation
+    agent_order = [player, selected_agent]
+    conversation = Conversation(agent_order, prompts['single_person_conversation_complex'], setting, llm)
+    responses_left = 6
+    while responses_left > 0:
+        message = input(f'{player.name}: ')
+        responses: list[ConversationResponse] = conversation.converse(message)
+        for i, r in enumerate(responses):
+            if r.text: print(f'{r.agent}: {r.text}')
+            if r.conversation_ends: responses_left = 0
+
+        responses_left -= 1
+
+    print("\nThe conversation has ended.\n")
