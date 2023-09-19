@@ -1,11 +1,9 @@
 from copy import copy
-from agents.conversation import Conversation, ConversationResponse
+from agents.conversation import Conversation, ConversationResponse, LLMData
 from agents.agent import Agent, PlayerAgent
 
 
-def first_day_intro(
-    llm, prompts: dict, setting: dict, agents: list[Agent], player: PlayerAgent
-):
+def first_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
     remaining_intro = copy(agents)
     print(
         """
@@ -43,9 +41,8 @@ def first_day_intro(
             if selected_agent.does_talk_first_on_first_meeting
             else [player, selected_agent]
         )
-        conversation = Conversation(
-            agent_order, prompts["single_person_conversation_complex"], setting, llm
-        )
+        conversation = Conversation(agent_order, llm_data)
+
         responses_left = 6
         while responses_left > 0:
             # Poke the AI if it speaks first, else we deal with the player and skip to AI
@@ -77,9 +74,7 @@ def first_night_cutscene():
     )
 
 
-def second_day_intro(
-    llm, prompts: dict, setting: dict, agents: list[Agent], player: PlayerAgent
-):
+def second_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
     print(
         """ 
         Sunlight reveals tense faces. The townfolk have formed two groups.
@@ -108,12 +103,8 @@ def second_day_intro(
 
     # Another time-bound convo
     responses_left = 12
-    conversation = Conversation(
-        agent_order + [player],
-        prompts["single_person_conversation_complex"],
-        setting,
-        llm,
-    )
+    conversation = Conversation(agent_order + [player], llm_data)
+    
     while responses_left > 0:
         # DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
         if responses_left == 6:
@@ -131,20 +122,17 @@ def second_day_intro(
         responses_left -= 1
 
     print(
-        """
-        \nA sudden gunshot rings out, interrupting your conversation. The 
+        """\n
+        A sudden gunshot rings out, interrupting your conversation. The 
         townsfolk scatter, heading to their homes or businesses to seek cover.
-        \n
         """
     )
 
 
-def second_day_afternoon(
-    llm, prompts: dict, setting: dict, agents: list[Agent], player: PlayerAgent
-):
+def second_day_afternoon(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
     print(
         """
-        \nThe town is quieter now, and the townspeoples' nerves are on edge. 
+        The town is quieter now, and the townspeoples' nerves are on edge. 
         You have the chance to speak to one more person in-depth. \n
         """
     )
@@ -160,9 +148,7 @@ def second_day_afternoon(
 
     # Have a simple time-bounded conversation
     agent_order = [player, selected_agent]
-    conversation = Conversation(
-        agent_order, prompts["single_person_conversation_complex"], setting, llm
-    )
+    conversation = Conversation(agent_order, llm_data)
     responses_left = 6
     while responses_left > 0:
         message = input(f"{player.name}: ")
@@ -178,9 +164,7 @@ def second_day_afternoon(
     print("\nThe conversation has ended.\n")
 
 
-def final_confrontation(
-    llm, prompts: dict, setting: dict, agents: list[Agent], player: PlayerAgent
-):
+def final_confrontation(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
     print(
         """
         Night has fallen. You gather everyone in the Saloon, where the mood is 
@@ -192,12 +176,8 @@ def final_confrontation(
     )
 
     responses_left = 12
-    conversation = Conversation(
-        [player] + agents,
-        prompts["single_person_conversation_complex"],
-        setting,
-        llm,
-    )
+    conversation = Conversation([player] + agents, llm_data)
+
     while responses_left > 0:
         print("You have ", responses_left, " statements left.\n")
         message = input(f"{player.name}: ")
@@ -221,7 +201,7 @@ def final_confrontation(
 
     if selected_agent.name == "Whistle":
         print(
-        """
+            """
         You aim your gun at Whistle, and pull the trigger. The bullet
         flies through the air, and hits Whistle square in the chest. He
         falls to the ground, dead. The townsfolk cheer, and you are

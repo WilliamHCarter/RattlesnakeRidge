@@ -1,6 +1,7 @@
 
 from dataclasses import dataclass
 from langchain.chains import LLMChain
+from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from langchain.prompts import PromptTemplate
 from langchain.schema.messages import ChatMessage
 from agents.agent import Agent, PlayerAgent
@@ -11,8 +12,15 @@ class ConversationResponse:
     agent: str
     conversation_ends: bool    
 
+@dataclass
+class LLMData:
+    llm: ChatOpenAI | FakeListChatModel
+    prompt: str
+    extra_flavor: dict
+
+
 class Conversation:
-    def __init__(self, agents: list[Agent | PlayerAgent], prompt: str, extra_flavor: dict, llm):
+    def __init__(self, agents: list[Agent | PlayerAgent], llmd: LLMData):
         # Declare vars
         self.agents = agents 
         self.conversations = []
@@ -20,12 +28,12 @@ class Conversation:
 
         # Create the prompts and conversations
         for i, agent in enumerate(agents):
-            self.formatted_prompts.append(prompt.format(**{**agent._raw, **extra_flavor}))
+            self.formatted_prompts.append(llmd.prompt.format(**{**agent._raw, **llmd.extra_flavor}))
 
             #Initialize the conversations  
             if not isinstance(agent, PlayerAgent):  
                 self.conversations.append(LLMChain(
-                    llm=llm,
+                    llm=llmd.llm,
                     prompt=PromptTemplate.from_template(self.formatted_prompts[i]),
                     verbose=False,
                     memory=self.agents[i]._memory

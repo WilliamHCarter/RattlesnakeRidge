@@ -4,6 +4,7 @@ import os
 import yaml
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from agents.agent import Agent, PlayerAgent
+from agents.conversation import LLMData
 from test_scenes import test_select_scene, test_multiagent_scene
 from scenes import (
     first_day_intro,
@@ -39,6 +40,7 @@ llm = FakeListChatModel(
     ],
 )
 # llm = ChatOpenAI(openai_api_key=api_key, model=model)
+llm_data: LLMData = LLMData(llm, prompts["single_person_conversation_complex"], setting)
 
 # ===== Setup the agents =====#
 # Dummy name haha
@@ -47,9 +49,10 @@ character_names = ["flint", "billy", "clara", "whistle"]
 agents = [Agent(datafile=f"data/characters/{name}.yaml") for name in character_names]
 player = PlayerAgent(datafile="data/characters/player.yaml")
 
+
 # ===== Run Each Story Scene =====#
-# first_day_intro(llm, prompts, setting, agents, player)
-# first_night_cutscene()
-# second_day_intro(llm, prompts, setting, agents, player)
-# second_day_afternoon(llm, prompts, setting, agents, player)
-final_confrontation(llm, prompts, setting, agents, player)
+first_day_intro(agents, player, llm_data)
+first_night_cutscene()
+second_day_intro(agents, player, llm_data)
+second_day_afternoon(agents, player, llm_data)
+final_confrontation(agents, player, llm_data)
