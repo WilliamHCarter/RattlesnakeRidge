@@ -2,6 +2,22 @@ from copy import copy
 from agents.conversation import Conversation, ConversationResponse, LLMData
 from agents.agent import Agent, PlayerAgent
 
+#================ Helper Functions ===================#
+def get_user_input(input_message: str, valid_inputs: list[str]):
+    while True:
+        user_input = input(input_message)
+        try:
+            number = int(user_input)
+            
+            if number in valid_inputs:
+                return number
+            else:
+                print("Number is out of range!")
+                
+        except ValueError:
+            print("Invalid input. Please enter a number!")
+
+#================ Scene Functions ===================#
 
 def first_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
     remaining_intro = copy(agents)
@@ -23,7 +39,8 @@ def first_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData)
             print("Who would you like to talk to?")
             for i, agent in enumerate(remaining_intro):
                 print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
-            selection = int(input(f"Enter a number (1-{len(remaining_intro)}): ")) - 1
+            selection = "Enter a number (1-",len(remaining_intro)-1,":"
+            get_user_input(selection, range(1,len(remaining_intro)-1))
             print()
             selected_agent = remaining_intro[selection]
         else:
