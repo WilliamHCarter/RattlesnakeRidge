@@ -3,14 +3,13 @@ from agents.conversation import Conversation, ConversationResponse, LLMData
 from agents.agent import Agent, PlayerAgent
 
 #================ Helper Functions ===================#
-def get_user_input(input_message: str, valid_inputs: list[str]):
+def get_user_input(input_message: str, valid_inputs: list[int]):
     while True:
         user_input = input(input_message)
         try:
             number = int(user_input)
-            
             if number in valid_inputs:
-                return number
+                return number -1
             else:
                 print("Number is out of range!")
                 
@@ -39,9 +38,9 @@ def first_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData)
             print("Who would you like to talk to?")
             for i, agent in enumerate(remaining_intro):
                 print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
-            selection = "Enter a number (1-",len(remaining_intro)-1,":"
-            get_user_input(selection, range(1,len(remaining_intro)-1))
-            print()
+            input_range = range(1,len(remaining_intro)+1)
+            in_message = "Enter a number (1-"+str(len(input_range))+"):"
+            selection = get_user_input(in_message, input_range)
             selected_agent = remaining_intro[selection]
         else:
             selected_agent = remaining_intro[0]
@@ -115,7 +114,10 @@ def second_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData
     f_and_w: list[Agent] = [
         agent for agent in agents if agent.name in ["Marshal Flint", "Whistle"]
     ]
-    selection = int(input(f"Enter a number (1-2): ")) - 1
+    
+    input_range = range(1,len(b_and_c)+1)
+    in_message = "Enter a number (1-"+str(len(input_range))+"):"
+    selection = get_user_input(in_message, input_range)    
     agent_order: list[Agent] = b_and_c if selection == 0 else f_and_w
 
     # Another time-bound convo
@@ -158,8 +160,11 @@ def second_day_afternoon(agents: list[Agent], player: PlayerAgent, llm_data: LLM
     print("Who would you like to talk to?")
     for i, agent in enumerate(agents):
         print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
-    selection = int(input(f"Enter a number (1-4): ")) - 1
-    print()
+    
+    input_range = range(1,len(agents)+1)
+    in_message = "Enter a number (1-"+str(len(input_range))+"):"
+    selection = get_user_input(in_message, input_range)    
+
     selected_agent = agents[selection]
     print(f"\nTime to talk to {selected_agent.name}\n")
 
