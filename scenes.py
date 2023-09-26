@@ -2,7 +2,8 @@ from copy import copy
 from agents.conversation import Conversation, ConversationResponse, LLMData
 from agents.agent import Agent, PlayerAgent
 
-#================ Helper Functions ===================#
+
+# ================ Helper Functions ===================#
 def get_user_input(input_message: str, valid_inputs: list[int]):
     while True:
         user_input = input(input_message)
@@ -12,11 +13,13 @@ def get_user_input(input_message: str, valid_inputs: list[int]):
                 return number
             else:
                 print("Number is out of range!")
-                
+
         except ValueError:
             print("Invalid input. Please enter a number!")
 
-#================ Scene Functions ===================#
+
+# ================ Scene Functions ===================#
+
 
 def first_day_intro(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
     remaining_intro = copy(agents)
@@ -38,8 +41,8 @@ Thompson. \n
             print("Who would you like to talk to?")
             for i, agent in enumerate(remaining_intro):
                 print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
-            input_range = range(1,len(remaining_intro)+1)
-            in_message = "Enter a number (1-"+str(len(input_range))+"): "
+            input_range = range(1, len(remaining_intro) + 1)
+            in_message = "Enter a number (1-" + str(len(input_range)) + "): "
             selection = get_user_input(in_message, input_range) - 1
             selected_agent = remaining_intro[selection]
         else:
@@ -114,16 +117,16 @@ their side of the story?
     f_and_w: list[Agent] = [
         agent for agent in agents if agent.name in ["Marshal Flint", "Whistle"]
     ]
-    
-    input_range = range(1,len(b_and_c)+1)
-    in_message = "Enter a number (1-"+str(len(input_range))+"): "
+
+    input_range = range(1, len(b_and_c) + 1)
+    in_message = "Enter a number (1-" + str(len(input_range)) + "): "
     selection = get_user_input(in_message, input_range) - 1
     agent_order: list[Agent] = b_and_c if selection == 0 else f_and_w
 
     # Another time-bound convo
     responses_left = 12
     conversation = Conversation(agent_order + [player], llm_data)
-    
+
     while responses_left > 0:
         # DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
         if responses_left == 6:
@@ -160,9 +163,9 @@ You have the chance to speak to one more person in-depth.
     print("Who would you like to talk to?")
     for i, agent in enumerate(agents):
         print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
-    
-    input_range = range(1,len(agents)+1)
-    in_message = "Enter a number (1-"+str(len(input_range))+"): "
+
+    input_range = range(1, len(agents) + 1)
+    in_message = "Enter a number (1-" + str(len(input_range)) + "): "
     selection = get_user_input(in_message, input_range) - 1
 
     selected_agent = agents[selection]
@@ -208,8 +211,8 @@ be the killer.
         for i, r in enumerate(responses):
             if r.text:
                 print(f"{r.agent}: {r.text}")
-            # Todo:: for the final confrontation, we should not let the agents make the 
-            # conversation end early. Instead, they should be allowed to 'exit' the 
+            # Todo:: for the final confrontation, we should not let the agents make the
+            # conversation end early. Instead, they should be allowed to 'exit' the
             # conversation by refusing to say anything more.
             if r.conversation_ends:
                 responses_left = 0
@@ -224,7 +227,11 @@ be the killer.
     print()
     selected_agent = agents[selection]
 
-    # todo:: Make the character say dying words to the player
+    # Agents speaks their last words
+    conversation.speak_directly(
+        "You've been shot by the player, speak your dying words given your played experience",
+        selected_agent,
+    )
     if selected_agent.name == "Whistle":
         print(
             """
