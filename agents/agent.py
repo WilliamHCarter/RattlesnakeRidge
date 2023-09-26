@@ -28,7 +28,7 @@ class Agent:
     def introduction(self) -> str:
         if 'introduction' in self._raw:
             return str(self._raw['introduction'])
-        return 'INTRODUCTION'
+        raise ValueError('No introduction')
 
     @property
     def does_talk_first_on_first_meeting(self) -> bool:
