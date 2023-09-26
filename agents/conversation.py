@@ -60,7 +60,7 @@ class Conversation:
         self.conversations.append(tmp)
 
     #Loops through each member of the conversation and allows them to speak.
-    def converse(self, initial_message: str) -> ConversationResponse:
+    def converse(self, initial_message: str) -> list[ConversationResponse]:
         carried_message = initial_message
         responses: list[ConversationResponse] = []
 
@@ -82,6 +82,18 @@ class Conversation:
             self.cycle_agents()
             carried_message = res.text
     
+    def speak_directly(self, message: str, agent:Agent) -> list[ConversationResponse]:
+        carried_message = message
+        responses: list[ConversationResponse] = []
+        for a in self.agents:
+            if a == agent:
+                res, mes = self.__talk(carried_message)
+                responses.append(res)
+                a._memory.chat_memory.add_message(mes)
+                carried_message = res.text
+                return responses 
+
+
     #Makes a single agent speak given a message.
     def __talk(self, input_message: str) -> tuple[ConversationResponse, ChatMessage]:
         if (isinstance(self.conversations[0], PlayerAgent)):
