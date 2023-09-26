@@ -238,7 +238,7 @@ be the killer.
 You aim your gun at Whistle, and pull the trigger. The bullet
 flies through the air, and hits Whistle square in the chest. He
 falls to the ground, dead. The townsfolk cheer, and you are
-hailed as a hero. The ghost of Jeb can rest easy.\n
+hailed as a hero. The ghost of Jeb can rest easy.
         """
         )
     else:
