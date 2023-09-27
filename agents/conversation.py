@@ -46,14 +46,14 @@ class Conversation:
             else:
                 self.conversations.append("player")
 
-    def __parse_response(self, text: str) -> ConversationResponse:
+    def __parse_response(self, agent: Agent, text: str) -> ConversationResponse:
         # If the text starts with "[QUIT]", the conversation
         # is over and that command should be stripped.
         terminate_prefix = "[QUIT]"
         if text.startswith(terminate_prefix):
             text = text[len(terminate_prefix) :].lstrip()
-            return ConversationResponse(text, self.agents[0].name, True)
-        return ConversationResponse(text, self.agents[0].name, False)
+            return ConversationResponse(text, agent.name, True)
+        return ConversationResponse(text, agent.name, False)
 
     # Cycles the agents and conversations to the next one.
     # (We cycle and not iterate so that the conversation order can be easily observed externally by inspecting the Conversation object)
@@ -64,65 +64,53 @@ class Conversation:
         self.conversations.append(tmp)
 
     # Loops through each member of the conversation and allows them to speak.
-    def converse(self, initial_message: str) -> list[ConversationResponse]:
-        carried_message = initial_message
+    def converse(self, message: str) -> list[ConversationResponse]:
         responses: list[ConversationResponse] = []
+        carried_message = message
 
-        # Early check and cycle of player agent, since their message is pre-loaded as initial.
+        # If the first agent is a PlayerAgent, skip it.
         if isinstance(self.agents[0], PlayerAgent):
             self.cycle_agents()
 
-        while self.agents:
-            # If we've looped back to the player, we return. Cycling will be handled on re-entry.
-            if isinstance(self.agents[0], PlayerAgent):
-                return responses
-
-            # Let the current agent talk
-            res, mes = self.__talk(carried_message)
+        while not isinstance(self.agents[0], PlayerAgent):
+            res, mes = self.__talk(self.agents[0], self.conversations[0], carried_message)
             responses.append(res)
+            
             for a in self.agents:
                 a._memory.chat_memory.add_message(mes)
 
             self.cycle_agents()
             carried_message = res.text
 
-    def speak_directly(self, initial_message: str, agent) -> list[ConversationResponse]:
-        # Initialize the response list and carried message
-        carried_message = initial_message
+        return responses
+
+
+    def speak_directly(self, message: str, agent: Agent) -> list[ConversationResponse]:
+        if agent not in self.agents:
+            raise ValueError(f"Agent {agent.name} is not in the conversation")
+
+        conversation = self.conversations[self.agents.index(agent)]
         responses: list[ConversationResponse] = []
 
-        # Store the original first agent for later restoration
-        original_first_agent = self.agents[0]
-
-        # Cycle through agents until the target agent is at the top
-        while self.agents[0] != agent:
-            self.cycle_agents()
-
-        # Converse with the target agent
-        res, mes = self.__talk(carried_message)
+        # Converse directly with the target agent without disturbing turn order
+        res, mes = self.__talk(agent, conversation, message)
         responses.append(res)
         for a in self.agents:
             a._memory.chat_memory.add_message(mes)
 
-        # Cycle through agents until the original first agent is restored to the top
-        while self.agents[0] != original_first_agent:
-            self.cycle_agents()
-
         return responses
 
     # Makes a single agent speak given a message.
-    def __talk(
-        self, input_message: str, conv_idx: int = 0
-    ) -> tuple[ConversationResponse, ChatMessage]:
-        if isinstance(self.conversations[conv_idx], PlayerAgent):
+    def __talk(self, agent: Agent, conversation, message: str):
+        if isinstance(agent, PlayerAgent):
             raise ValueError("PlayerAgent shoudn't talk via this method")
-        full_response = self.conversations[conv_idx]({"message": input_message})
-        response: ConversationResponse = self.__parse_response(full_response["text"])
+        raw_response = conversation({"message": message})
+        res: ConversationResponse = self.__parse_response(agent, raw_response["text"])
 
         # We need to remove and rename the AIMessage that gets added automatically
         # and re-add it as a ChatMessage with the correct label
-        cm = self.agents[conv_idx]._memory.chat_memory
-        cm.messages = cm.messages[: conv_idx - 1]
-        message = ChatMessage(role=self.agents[conv_idx].name, content=response.text)
+        cm = agent._memory.chat_memory
+        cm.messages = cm.messages[:-1]
+        msg: ChatMessage = ChatMessage(role=agent.name, content=res.text)
         # Return the generated response
-        return response, message
+        return res, msg
