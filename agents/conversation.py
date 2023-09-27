@@ -83,29 +83,27 @@ class Conversation:
             carried_message = res.text
     
     def speak_directly(self, message: str, agent:Agent) -> list[ConversationResponse]:
-        carried_message = message
         responses: list[ConversationResponse] = []
-        for a in self.agents:
+        for i, a in enumerate(self.agents):
             if a == agent:
-                res, mes = self.__talk(carried_message)
+                res, mes = self.__talk(message, i)
                 responses.append(res)
                 a._memory.chat_memory.add_message(mes)
-                carried_message = res.text
                 return responses 
 
 
     #Makes a single agent speak given a message.
-    def __talk(self, input_message: str) -> tuple[ConversationResponse, ChatMessage]:
-        if (isinstance(self.conversations[0], PlayerAgent)):
-            raise ValueError("PlayerAgent shoudn't talk via this method");
-        full_response = self.conversations[0]({"message": input_message})
+    def __talk(self, input_message: str, conv_idx: int = 0) -> tuple[ConversationResponse, ChatMessage]:
+        if (isinstance(self.conversations[conv_idx], PlayerAgent)):
+            raise ValueError("PlayerAgent shoudn't talk via this method")
+        full_response = self.conversations[conv_idx]({"message": input_message})
         response:ConversationResponse = self.__parse_response(full_response['text'])
 
         # We need to remove and rename the AIMessage that gets added automatically
         # and re-add it as a ChatMessage with the correct label
-        cm = self.agents[0]._memory.chat_memory
-        cm.messages = cm.messages[:-1]
-        message = ChatMessage(role=self.agents[0].name, content=response.text)
+        cm = self.agents[conv_idx]._memory.chat_memory
+        cm.messages = cm.messages[:conv_idx-1]
+        message = ChatMessage(role=self.agents[conv_idx].name, content=response.text)
         # Return the generated response
         return response, message
 
