@@ -228,10 +228,13 @@ be the killer.
     selected_agent = agents[selection]
 
     # Agents speaks their last words
-    conversation.speak_directly(
+    final = conversation.speak_directly(
         "You've been shot by the player, speak your dying words given your played experience",
         selected_agent,
     )
+    for i, r in enumerate(final):
+        if r.text:
+            print(f"{r.agent}: {r.text}")
     if selected_agent.name == "Whistle":
         print(
             """
