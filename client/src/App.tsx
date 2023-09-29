@@ -1,10 +1,11 @@
+import CrtScreen from "./components/CrtScreen";
+import Navbar from "./components/Navbar";
 function App() {
   return (
-    <div className="mx-auto">
-      <h1 className="text-[3.2em] leading-[1.1] font-semibold">
-        Rattlesnake Ridge
-      </h1>
-      <p>Clean test page</p>
+    <div className="mx-auto flex flex-col">
+      <Navbar />
+      <div className="py-4"/>
+      <CrtScreen/>
     </div>
   );
 }
