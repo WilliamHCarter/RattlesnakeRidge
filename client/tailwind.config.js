@@ -11,7 +11,10 @@ export default {
       },
       colors : {
         neutral: "#f4f4f4",
-      }
+      },
+      screens: {
+        'pc': '1024px',
+      },
     },
 
   },

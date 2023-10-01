@@ -2,7 +2,7 @@ import { SendHorizonal } from "lucide-react";
 
 function InputField() {
   return (
-    <div className="flex justify-between gap-2 border w-[85vw] self-center mt-10 shadow-ctr2xl rounded-xl">
+    <div className="flex justify-between gap-2 border w-[85vw] pc:w-[60vw] self-center mt-10 shadow-ctr2xl rounded-xl">
       <input
         className="rounded-xl p-3 w-full focus:outline-none"
         placeholder="Type your message..."
