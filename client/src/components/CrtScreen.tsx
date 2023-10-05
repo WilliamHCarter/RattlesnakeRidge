@@ -1,7 +1,7 @@
 function CrtScreen() {
   return (
     <div className="flex self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative">
-      <div className="rounded-xl absolute h-full w-full bg-gradient-radial from-[#042625] to-[#0c1919]" />
+      <div className="rounded-xl absolute h-full w-full bg-gradient-radial from-[#273837] to-[#0c1919]" />
       <div
         className="CRT Filter rounded-xl"
         style={{
