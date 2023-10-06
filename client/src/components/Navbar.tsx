@@ -1,5 +1,6 @@
 import SettingsButton from "./SettingsButton";
 import SourceButton from "./SourceButton";
+import ThemeButton from "./ThemeButton";
 
 function Navbar() {
   return (
@@ -8,6 +9,7 @@ function Navbar() {
       <nav className="flex gap-6 items-center">
         <div className="flex gap-4">
           <SourceButton />
+          <ThemeButton />
           <SettingsButton />
         </div>
       </nav>

@@ -11,6 +11,13 @@ export default {
       },
       colors : {
         neutral: "#f4f4f4",
+        dneutral: "#1f1f1f",
+        lbg: "ffffff",
+        dbg: "#09090b",
+        button: "#f4f4f4",
+        dbutton: "#27272a",
+        border: "hsl(240 5.9% 90%)",
+        dborder: "hsl(240 3.7% 15.9%)",
       },
       screens: {
         'pc': '1024px',
@@ -19,4 +26,6 @@ export default {
 
   },
   plugins: [],
+  darkMode: "class",
+
 };

@@ -1,6 +1,6 @@
 function SourceButton() {
   return (
-    <div className=" bg-neutral hover:bg-[#756e6e25] rounded-lg">
+    <div className="bg-button dark:bg-dbutton hover:bg-[#756e6e25] rounded-lg">
       <a
         className="flex items-center px-4 py-2"
         href="https://github.com/WilliamHCarter/RattlesnakeRidge"

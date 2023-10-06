@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="mx-auto flex flex-col">
       <Navbar />
-      <div className="Divider shrink-0 bg-[#e4e4e7] h-[1px] w-full" />
+      <div className="Divider shrink-0 bg-[#e4e4e7] dark:bg-dbutton h-[1px] w-full" />
       <div className="py-4" />
       <CrtScreen />
       <InputField />
