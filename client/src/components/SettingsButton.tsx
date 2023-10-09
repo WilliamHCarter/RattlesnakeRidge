@@ -9,7 +9,7 @@ function SettingsButton() {
   return (
     <>
       <button
-        className="p-2 bg-transparent rounded-md transition-all duration-150 ease-in-out hover:bg-neutral hover:shadow-sm"
+        className="p-2 bg-transparent rounded-md transition-all duration-150 ease-in-out hover:bg-neutral dark:hover:bg-dbutton hover:shadow-sm"
         onClick={() => setSettingsCard(true)}
       >
         <Settings size={24} />
