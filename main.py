@@ -43,7 +43,6 @@ llm = FakeListChatModel(
 llm_data: LLMData = LLMData(llm, prompts["single_person_conversation_complex"], setting)
 
 # ===== Setup the agents =====#
-# Dummy name haha
 character_names = ["flint", "billy", "clara", "whistle"]
 
 agents = [Agent(datafile=f"data/characters/{name}.yaml") for name in character_names]

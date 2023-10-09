@@ -8,6 +8,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SESSION_TYPE'] = 'filesystem'
 
+#Global in-memory game state storage for active sessions
+game_states = {}
+
 Session(app)
 
 from app import routes
