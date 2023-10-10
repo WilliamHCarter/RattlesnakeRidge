@@ -6,7 +6,7 @@ from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from agents.agent import Agent, PlayerAgent
 from agents.conversation import LLMData
 from test_scenes import test_select_scene, test_multiagent_scene
-from scenes import (
+from local_scenes import (
     first_day_intro,
     first_night_cutscene,
     second_day_intro,
