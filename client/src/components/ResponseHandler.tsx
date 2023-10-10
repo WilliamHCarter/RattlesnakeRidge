@@ -35,9 +35,10 @@ function ResponseHandler() {
     if (response.ok) {
       const data = await response.json();
       let message = data.response?.message ?? "";
+      let messages = data.response?.messages ?? [];
       let options = data.response?.options ?? [];
-
-      setConversation((prev) => [...prev, userInput, message, ...options]);
+      console.log(data);
+      setConversation((prev) => [...prev, "User: "+userInput+"\n", message, ...options, ...messages]);
     } else {
       console.error("Failed to send the message");
     }
