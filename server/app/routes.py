@@ -1,8 +1,7 @@
 import uuid
 from flask import Flask, request, jsonify
-from server.game import play, initialize_game  
-from app import game_states  
-app = Flask(__name__)
+from .. game import play, initialize_game  
+from server.app import game_states  , app
 
 @app.route('/start', methods=['GET'])
 def start_game():
@@ -32,6 +31,11 @@ def end_game(game_id):
         return jsonify(message="Game data cleared!")
     else:
         return jsonify(error="Invalid game ID"), 400
+
+@app.route('/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Success"})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

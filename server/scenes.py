@@ -1,9 +1,16 @@
 from copy import copy
+from dataclasses import dataclass
 from agents.conversation import Conversation, ConversationResponse, LLMData
 from agents.agent import Agent, PlayerAgent
 
 
 # ================ Helper Functions ===================#
+@dataclass
+class SceneState:
+    def __init__(self):
+        self.step = 0
+        self.selected_agent = None
+
 def get_user_input(input_message: str, valid_inputs: list[int]):
     while True:
         user_input = input(input_message)
@@ -151,42 +158,54 @@ townsfolk scatter, heading to their homes or businesses to seek cover.
     )
 
 
-def second_day_afternoon(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
-    print(
-        """
-The town is quieter now, and the townspeoples' nerves are on edge. 
-You have the chance to speak to one more person in-depth.
-        """
-    )
+def second_day_afternoon(
+    state: SceneState,
+    agents: list[Agent],
+    player: PlayerAgent,
+    llm_data: LLMData,
+    user_input: str,
+):
+    match state.step:
+        #Scene intro and character select
+        case 0:
+            state.step += 1
+            return {
+                "message": "The town is quieter now, and the townspeople's nerves are on edge. You have the chance to speak to one more person in-depth. Who would you like to talk to?",
+                "options": [
+                    f"{i+1}: {agent.name} -- {agent.short_description}"
+                    for i, agent in enumerate(agents)
+                ],
+            }
 
-    # Select a person to talk to
-    print("Who would you like to talk to?")
-    for i, agent in enumerate(agents):
-        print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
+        #Selection Confirmation
+        case 1:
+            selection = int(user_input) - 1
+            state.selected_agent = agents[selection]
+            state.step += 1
+            return {
+                "message": f"Time to talk to {state.selected_agent.name}.",
+            }
 
-    input_range = range(1, len(agents) + 1)
-    in_message = "Enter a number (1-" + str(len(input_range)) + "): "
-    selection = get_user_input(in_message, input_range) - 1
+        #Conversation steps
+        case _ if 2 <= state.step <= 7:
+            agent_order = [player, state.selected_agent]
+            conversation = Conversation(agent_order, llm_data)
+            responses = conversation.converse(user_input)
+            response_texts = [f"{r.agent}: {r.text}" for r in responses if r.text]
 
-    selected_agent = agents[selection]
-    print(f"\nTime to talk to {selected_agent.name}\n")
+            if any(r.conversation_ends for r in responses):
+                state.step = 8
+                response_texts.append("The conversation has ended.")
+            else:
+                state.step += 1
 
-    # Have a simple time-bounded conversation
-    agent_order = [player, selected_agent]
-    conversation = Conversation(agent_order, llm_data)
-    responses_left = 6
-    while responses_left > 0:
-        message = input(f"{player.name}: ")
-        responses: list[ConversationResponse] = conversation.converse(message)
-        for i, r in enumerate(responses):
-            if r.text:
-                print(f"{r.agent}: {r.text}")
-            if r.conversation_ends:
-                responses_left = 0
+            return {"messages": response_texts}
 
-        responses_left -= 1
+        case 8:
+            return {"message": "Scene completed."}
 
-    print("\nThe conversation has ended.\n")
+        case _:
+            raise Exception("Invalid step")
 
 
 def final_confrontation(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):

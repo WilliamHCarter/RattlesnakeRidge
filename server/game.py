@@ -6,7 +6,7 @@ from agents.conversation import LLMData
 from agents.agent import Agent, PlayerAgent
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from flask import session
-from scenes import (
+from server.scenes import (
     first_day_intro,
     first_night_cutscene,
     second_day_intro,
