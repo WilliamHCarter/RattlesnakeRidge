@@ -1,6 +1,6 @@
 import uuid
 from flask import Flask, request, jsonify
-from .. game import play, initialize_game  
+from .. game import play as play_game, initialize_game  
 from server.app import game_states  , app
 
 @app.route('/start', methods=['GET'])
@@ -21,7 +21,7 @@ def play(game_id):
     if game_state is None:
         return jsonify(error="Invalid game ID"), 400
     
-    response = play(game_state, user_input)
+    response = play_game(game_state, user_input)
     return jsonify(response=response)
 
 @app.route('/end/<game_id>', methods=['POST'])

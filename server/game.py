@@ -7,6 +7,7 @@ from agents.agent import Agent, PlayerAgent
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from flask import session
 from server.scenes import (
+    SceneState,
     first_day_intro,
     first_night_cutscene,
     second_day_intro,
@@ -26,6 +27,7 @@ SCENES = {
 
 @dataclass
 class GameState:
+    scene_state: SceneState
     agents: list[Agent | PlayerAgent]
     player: PlayerAgent
     current_scene: str
@@ -72,14 +74,16 @@ def initialize_game() -> GameState:
     return GameState(
         agents=agents,
         player=player,
-        current_scene="first_day_intro",
+        current_scene="second_day_afternoon",
         llm_data=llm_data,
+        scene_state=SceneState(),
     )
 
 
 def play(gs: GameState, user_input: str):
     # Get the current scene from the game state
-    response = gs.current_scene(gs.agents, gs.player, gs.llm_data, user_input)
-
+    response = SCENES[gs.current_scene](gs.scene_state, gs.agents, gs.player, gs.llm_data, user_input)
+    if response:
+        return response
     # Handle the case where the scene is not found
     return "System Error, scene not found", None

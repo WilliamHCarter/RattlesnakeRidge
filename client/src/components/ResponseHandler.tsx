@@ -4,18 +4,20 @@ import CrtScreen from "./CrtScreen";
 
 function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]); // Explicitly declare the type as string[]
-    var loaded = false;
+  const [gameID, setGameID] = useState<string>("");
+  var loaded = false;
+  
   // Fetch the initial message from the server when the component mounts.
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch("http://127.0.0.1:5000/start");
       if (response.ok && !loaded) {
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         setConversation((prev) => [...prev, data.message]);
         loaded = true;
+        setGameID(() =>(data.game_id));
       } else {
-        console.error("Failed to fetch the initial data");
       }
     };
 
@@ -24,7 +26,7 @@ function ResponseHandler() {
 
   // Send `userInput` to the server, receive response, then add to `conversation`.
   const handleUserInput = async (userInput: string) => {
-    const response = await fetch("http://127.0.0.1:5000/play", {
+    const response = await fetch("http://127.0.0.1:5000/play/"+gameID, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userInput: userInput }),
