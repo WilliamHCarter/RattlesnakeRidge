@@ -1,5 +1,3 @@
-import CrtScreen from "./components/CrtScreen";
-import InputField from "./components/InputField";
 import Navbar from "./components/Navbar";
 import ResponseHandler from "./components/ResponseHandler";
 
