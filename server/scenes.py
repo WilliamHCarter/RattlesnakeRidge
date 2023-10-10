@@ -8,21 +8,19 @@ from agents.agent import Agent, PlayerAgent
 @dataclass
 class SceneState:
     def __init__(self):
-        self.step = 0
-        self.selected_agent = None
+        self.step: int = 0
+        self.selected_agent: Agent = None
 
-def get_user_input(input_message: str, valid_inputs: list[int]):
-    while True:
-        user_input = input(input_message)
-        try:
-            number = int(user_input)
-            if number in valid_inputs:
-                return number
-            else:
-                print("Number is out of range!")
 
-        except ValueError:
-            print("Invalid input. Please enter a number!")
+def validate_input(input_message: str, valid_inputs: list[int]):
+    if input_message.isdigit():
+        number = int(input_message)
+        if number in valid_inputs:
+            return number
+        else:
+            return "Number is out of range!"
+    else:
+        return "Invalid input. Please enter a number!"
 
 
 # ================ Scene Functions ===================#
@@ -50,7 +48,7 @@ Thompson. \n
                 print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
             input_range = range(1, len(remaining_intro) + 1)
             in_message = "Enter a number (1-" + str(len(input_range)) + "): "
-            selection = get_user_input(in_message, input_range) - 1
+            selection = validate_input(in_message, input_range) - 1
             selected_agent = remaining_intro[selection]
         else:
             selected_agent = remaining_intro[0]
@@ -127,7 +125,7 @@ their side of the story?
 
     input_range = range(1, len(b_and_c) + 1)
     in_message = "Enter a number (1-" + str(len(input_range)) + "): "
-    selection = get_user_input(in_message, input_range) - 1
+    selection = validate_input(in_message, input_range) - 1
     agent_order: list[Agent] = b_and_c if selection == 0 else f_and_w
 
     # Another time-bound convo
@@ -166,7 +164,7 @@ def second_day_afternoon(
     user_input: str,
 ):
     match state.step:
-        #Scene intro and character select
+        # Scene intro and character select
         case 0:
             state.step += 1
             return {
@@ -177,16 +175,18 @@ def second_day_afternoon(
                 ],
             }
 
-        #Selection Confirmation
+        # Selection Confirmation
         case 1:
-            selection = int(user_input) - 1
-            state.selected_agent = agents[selection]
+            selection = validate_input(user_input, [1, 2, 3, 4])
+            if selection is not int:
+                return {"message": selection}
+            state.selected_agent = agents[selection - 1]
             state.step += 1
             return {
                 "message": f"Time to talk to {state.selected_agent.name}.",
             }
 
-        #Conversation steps
+        # Conversation steps
         case _ if 2 <= state.step <= 7:
             agent_order = [player, state.selected_agent]
             conversation = Conversation(agent_order, llm_data)

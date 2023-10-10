@@ -82,8 +82,10 @@ def initialize_game() -> GameState:
 
 def play(gs: GameState, user_input: str):
     # Get the current scene from the game state
-    response = SCENES[gs.current_scene](gs.scene_state, gs.agents, gs.player, gs.llm_data, user_input)
+    response = SCENES[gs.current_scene](
+        gs.scene_state, gs.agents, gs.player, gs.llm_data, user_input
+    )
     if response:
         return response
     # Handle the case where the scene is not found
-    return "System Error, scene not found", None
+    return "System Error, scene not found"
