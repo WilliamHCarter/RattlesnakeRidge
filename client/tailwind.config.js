@@ -20,7 +20,9 @@ export default {
         dborder: "hsl(240 3.7% 15.9%)",
       },
       screens: {
-        'pc': '1024px',
+        'pc': '1300px',
+        'laptop': '1024px',
+        'tablet': '600px',
       },
     },
 

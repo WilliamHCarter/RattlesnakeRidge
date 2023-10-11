@@ -12,7 +12,7 @@ def start_game():
     # Initializing the game state
     game_states[game_id] = initialize_game()
 
-    return jsonify(game_id=game_id, message="Game started!")
+    return jsonify(game_id=game_id, message="> Enter any key to start")
 
 
 @app.route("/play/<game_id>", methods=["POST"])

@@ -72,7 +72,7 @@ def first_day_intro(gs: GameState, state: SceneState, user_input: str):
                         for i, agent in enumerate(gs.intro_agents)
                     ],
                     "system": "Enter a number (1-"
-                    + str(range(1, len(gs.intro_agents)))
+                    + str(len(gs.intro_agents))
                     + "): ",
                 }
             if state.step == 2:
@@ -156,13 +156,14 @@ def second_day_intro(gs: GameState, state: SceneState, user_input: str):
     if not isinstance(selection, int):
         return {"message": selection}
     agent_order: list[Agent] = b_and_c if (selection - 1) == 0 else f_and_w
+    if state.step >= 100:
+        state.step = 0
+        return "Scene completed."
     if state.step > 6:
         state.step = 100
         return {
             "message": "A sudden gunshot rings out, interrupting your conversation. The townsfolk scatter, heading to their homes or businesses to seek cover."
         }
-    if state.step == 100:
-        return "Scene completed."
     response = chat(gs, agent_order + [gs.player], user_input, 7)
     return response
 
@@ -194,8 +195,8 @@ def second_day_afternoon(gs: GameState, state: SceneState, user_input: str):
         # Have a Conversation
         case _ if 1 < state.step < 8:
             agent_order = [gs.player, state.selected_agent]
-            response_texts = chat(gs, agent_order, user_input, 8)
-            return {"messages": response_texts}
+            response = chat(gs, agent_order, user_input, 8)
+            return response
 
         case 8:
             state.step = 0

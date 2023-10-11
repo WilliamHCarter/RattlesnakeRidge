@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import AsciiBanner from "./AsciiBanner";
 
 function CrtScreen({ conversation }: { conversation: string[] }) {
     
@@ -11,7 +12,7 @@ function CrtScreen({ conversation }: { conversation: string[] }) {
   }, [conversation]);
 
   return (
-    <div className="flex self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative">
+    <div className="flex justify-center self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative">
       <div className="rounded-xl absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919]" />
       <div
         className="CRT Filter rounded-xl"
@@ -29,7 +30,7 @@ function CrtScreen({ conversation }: { conversation: string[] }) {
         }}
       />
       <div className="text-md text-green-600 font-mono p-8 z-10 overflow-auto" ref={scrollRef}>
-        Welcome to Rattlesnake Ridge...
+        <AsciiBanner />
         {conversation.map((message, index) => (
           <pre key={index} className="whitespace-pre-wrap">
             {message}
