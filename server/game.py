@@ -1,8 +1,8 @@
 import os
 import yaml
 from dotenv import load_dotenv
-from agents.conversation import LLMData
-from agents.agent import Agent, PlayerAgent
+from server.agents.conversation import LLMData
+from server.agents.agent import Agent, PlayerAgent
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from server.scenes import (
     SceneState,

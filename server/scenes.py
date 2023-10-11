@@ -1,7 +1,7 @@
 from copy import copy
 from dataclasses import dataclass
-from agents.conversation import Conversation, ConversationResponse, LLMData
-from agents.agent import Agent, PlayerAgent
+from server.agents.conversation import Conversation, ConversationResponse, LLMData
+from server.agents.agent import Agent, PlayerAgent
 
 
 # ================ Data Classes ===================#
