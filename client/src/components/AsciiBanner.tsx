@@ -1,8 +1,9 @@
+import '../index.css';
 function AsciiBanner() {
   return (
-    <div className="ascii-banner w-full">
-      <pre className="pc:flex justify-center hidden ">
-        <code className="leading-[1.4rem]">
+    <div className=" ascii-banner w-full ">
+      <pre className=" pc:flex justify-center hidden ">
+        <code className=" leading-[1.4rem] ">
             +--------------------------------- Rattlesnake Ridge ----------------------------------+<br/>
             |                                                                                      |<br/>
             |          /\                     /\             /\          /\                 /\     |<br/>
