@@ -1,13 +1,12 @@
 import os
 import yaml
 from dotenv import load_dotenv
-from dataclasses import dataclass
 from agents.conversation import LLMData
 from agents.agent import Agent, PlayerAgent
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
-from flask import session
 from server.scenes import (
     SceneState,
+    GameState,
     first_day_intro,
     first_night_cutscene,
     second_day_intro,
@@ -16,22 +15,13 @@ from server.scenes import (
 )
 
 # A mapping of scene names to scene functions
-SCENES = {
-    "first_day_intro": first_day_intro,
-    "first_night_cutscene": first_night_cutscene,
-    "second_day_intro": second_day_intro,
-    "second_day_afternoon": second_day_afternoon,
-    "final_confrontation": final_confrontation,
-}
-
-
-@dataclass
-class GameState:
-    scene_state: SceneState
-    agents: list[Agent | PlayerAgent]
-    player: PlayerAgent
-    current_scene: str
-    llm_data: LLMData
+SCENES = [
+    first_day_intro,
+    first_night_cutscene,
+    second_day_intro,
+    second_day_afternoon,
+    final_confrontation,
+]
 
 
 def initialize_game() -> GameState:
@@ -74,18 +64,20 @@ def initialize_game() -> GameState:
     return GameState(
         agents=agents,
         player=player,
-        current_scene="second_day_afternoon",
+        intro_agents=agents,
+        current_scene=SCENES[0],
         llm_data=llm_data,
         scene_state=SceneState(),
     )
 
 
-def play(gs: GameState, user_input: str):
+def play(game_state: GameState, user_input: str):
     # Get the current scene from the game state
-    response = SCENES[gs.current_scene](
-        gs.scene_state, gs.agents, gs.player, gs.llm_data, user_input
-    )
-    if response:
+    response = game_state.current_scene(game_state, game_state.scene_state, user_input)
+
+    if response == "Scene completed.":
+        game_state.current_scene = SCENES.index(game_state.current_scene) + 1
+    elif response:
         return response
     # Handle the case where the scene is not found
     return "System Error, scene not found"
