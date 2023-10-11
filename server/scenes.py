@@ -152,10 +152,10 @@ def second_day_intro(gs: GameState, state: SceneState, user_input: str):
         agent for agent in gs.agents if agent.name in ["Marshal Flint", "Whistle"]
     ]
 
-    selection = validate_input(user_input, [1,2])
+    selection = validate_input(user_input, [1, 2])
     if not isinstance(selection, int):
         return {"message": selection}
-    agent_order: list[Agent] = b_and_c if (selection-1) == 0 else f_and_w
+    agent_order: list[Agent] = b_and_c if (selection - 1) == 0 else f_and_w
     if state.step > 6:
         state.step = 100
         return {
@@ -198,51 +198,40 @@ def second_day_afternoon(gs: GameState, state: SceneState, user_input: str):
             return {"messages": response_texts}
 
         case 8:
+            state.step = 0
             return "Scene completed."
 
         case _:
             raise Exception("Invalid step")
 
 
-def final_confrontation(agents: list[Agent], player: PlayerAgent, llm_data: LLMData):
-    print(
-        """
-Night has fallen. You gather everyone in the Saloon, where the mood is 
-palpable. Shadows dance on the walls as you stand before the suspects. 
-Here, you must make your case to the townfolk, after which you must 
-aim your gun and pulling the trigger on the character you believe to 
-be the killer.
-        """
-    )
-
-    responses_left = 12
-    conversation = Conversation([player] + agents, llm_data)
-
-    while responses_left > 0:
-        print("You have ", responses_left, " statements left.\n")
-        message = input(f"{player.name}: ")
-        # Normal response conversation and message printing
-        responses: list[ConversationResponse] = conversation.converse(message)
-        for i, r in enumerate(responses):
-            if r.text:
-                print(f"{r.agent}: {r.text}")
-            # Todo:: for the final confrontation, we should not let the agents make the
-            # conversation end early. Instead, they should be allowed to 'exit' the
-            # conversation by refusing to say anything more.
-            if r.conversation_ends:
-                responses_left = 0
-
-        responses_left -= 1
-
-    # Select a person to eliminate
-    print("\n\nWho is your final target?\n")
-    for i, agent in enumerate(agents):
-        print(f"{str(i+1)}: {agent.name} -- {agent.short_description}")
-    selection = int(input(f"\nEnter a number (1-4): ")) - 1
-    print()
-    selected_agent = agents[selection]
+def final_confrontation(gs: GameState, state: SceneState, user_input: str):
+    if state.step == 0:
+        state.step += 1
+        return {
+            "message": "Night has fallen. You gather everyone in the Saloon, where the mood is palpable. Shadows dance on the walls as you stand before the suspects. Here, you must make your case to the townfolk, after which you must aim your gun and pulling the trigger on the character you believe to be the killer."
+        }
+    if state.step < 12:
+        responses_left = 12 - state.step
+        responses = chat(gs, [gs.player] + gs.agents, user_input, 12)
+        return {"message": "You have " + str(responses_left) + " statements left.\n", **responses}
+    if state.step == 12:
+        state.step += 1
+        # Select a person to eliminate
+        return {
+            "message": "Who is your final target?",
+            "options": [
+                f"{i+1}: {agent.name} -- {agent.short_description}"
+                for i, agent in enumerate(gs.agents)
+            ],
+            "system": "Enter a number (1-4): ",
+        }
+    if state.step == 13:
+        selection = validate_input(user_input, [1, 2, 3, 4])
+        selected_agent = gs.agents[selection - 1]
 
     # Agents speaks their last words
+    conversation = Conversation([selected_agent], gs.llm_data)
     final = conversation.speak_directly(
         "You've been shot by the player, speak your dying words given your played experience",
         selected_agent,
@@ -251,27 +240,14 @@ be the killer.
         if r.text:
             print(f"{r.agent}: {r.text}")
     if selected_agent.name == "Whistle":
-        print(
-            """
-You aim your gun at Whistle, and pull the trigger. The bullet
-flies through the air, and hits Whistle square in the chest. He
-falls to the ground, dead. The townsfolk cheer, and you are
-hailed as a hero. The ghost of Jeb can rest easy.
-        """
-        )
+        return {
+            "message": "You aim your gun at Whistle, and pull the trigger. The bullet flies through the air, and hits Whistle square in the chest. He falls to the ground, dead. The townsfolk cheer, and you are hailed as a hero. The ghost of Jeb can rest easy."
+        }
     else:
-        print(
-            f"""
-As {selected_agent.name} crumples to the ground, chaos ensues. 
-The real killer takes advantage of the confusion, locking you up 
-in the Marshal's Office with accusations of murder, while they 
-make their escape, leaving you with the weight of your misjudgment.
-            """,
-        )
+        return {
+            "message": "As "
+            + selected_agent.name
+            + " crumples to the ground, chaos ensues. The real killer takes advantage of the confusion, locking you up in the Marshal's Office with accusations of murder, while they make their escape, leaving you with the weight of your misjudgment.",
+            "system": "\n\nThanks For Playing Rattlesnake Ridge! \n Built by Will Carter and Aidan McHugh"
+        }
 
-    print(
-        """
-    Thanks For Playing Rattlesnake Ridge!
-    Made by Will Carter and Aidan McHugh
-        """
-    )

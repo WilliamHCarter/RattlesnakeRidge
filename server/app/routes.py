@@ -1,5 +1,5 @@
 import uuid
-from flask import Flask, request, jsonify
+from flask import request, jsonify
 from ..game import play as play_game, initialize_game
 from server.app import game_states, app
 
