@@ -64,7 +64,7 @@ def initialize_game() -> GameState:
     return GameState(
         agents=agents,
         player=player,
-        intro_agents=agents,
+        intro_agents=agents.copy(),
         current_scene=SCENES[0],
         llm_data=llm_data,
         scene_state=SceneState(),
@@ -76,7 +76,9 @@ def play(game_state: GameState, user_input: str):
     response = game_state.current_scene(game_state, game_state.scene_state, user_input)
 
     if response == "Scene completed.":
-        game_state.current_scene = SCENES.index(game_state.current_scene) + 1
+        game_state.current_scene = SCENES[SCENES.index(game_state.current_scene) + 1]
+        response = game_state.current_scene(game_state, game_state.scene_state, user_input)
+        return response
     elif response:
         return response
     # Handle the case where the scene is not found

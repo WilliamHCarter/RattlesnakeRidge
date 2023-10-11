@@ -82,7 +82,7 @@ def first_day_intro(gs: GameState, state: SceneState, user_input: str):
                 if not isinstance(selection, int):
                     return {"message": selection}
                 state.step += 1
-                state.selected_agent = gs.agents[selection - 1]
+                state.selected_agent = gs.intro_agents[selection - 1]
 
             if 3 <= state.step:
                 agent_order = (
@@ -114,16 +114,19 @@ def first_day_intro(gs: GameState, state: SceneState, user_input: str):
             return {"message": "" + intro_text, **responses}
 
     else:
+        state.step = 0
         return "Scene completed."
 
 
-def first_night_cutscene():
-    return """
-The moon is high when a piercing scream echoes through the night. 
-Everyone rushes out to find Whistle's Saloon in disarray -- a scuffle 
-has occurred. You notice a bloodied poker card on the floor, the ace 
-of spades. This might be a clue, but to what?
-        """
+def first_night_cutscene(gs: GameState, state: SceneState, user_input: str):
+    if state.step == 0:
+        state.step += 1
+        return {
+            "message": "The moon is high when a piercing scream echoes through the night. Everyone rushes out to find Whistle's Saloon in disarray -- a scuffle has occurred. You notice a bloodied poker card on the floor, the ace of spades. This might be a clue, but to what?"
+        }
+    if state.step == 1:
+        state.step = 0
+        return "Scene completed."
 
 
 def second_day_intro(gs: GameState, state: SceneState, user_input: str):
@@ -131,8 +134,9 @@ def second_day_intro(gs: GameState, state: SceneState, user_input: str):
     if state.step == 0:
         state.step += 1
         intro_text = "Sunlight reveals tense faces. The townfolk have formed two groups. On one side, by the water trough, stands Whistle, looking ruffled,  and Miss Clara, her comforting hand on his arm. They seem to be arguing with the other group, consisting of Marshal Flint and Billy, who are on the steps of the Marshal's Office. You need to make a choice quickly: which duo will you approach to get their side of the story?'\n\n"
-    
+
     if state.step == 1:
+        state.step += 1
         return {
             "message": intro_text + "Who would you like to talk to?",
             "options": ["1: Billy and Clara", "2: Flint and Whistle"],
@@ -148,37 +152,19 @@ def second_day_intro(gs: GameState, state: SceneState, user_input: str):
         agent for agent in gs.agents if agent.name in ["Marshal Flint", "Whistle"]
     ]
 
-    input_range = range(1, len(b_and_c) + 1)
-    in_message = "Enter a number (1-" + str(len(input_range)) + "): "
-    selection = validate_input(in_message, input_range) - 1
-    agent_order: list[Agent] = b_and_c if selection == 0 else f_and_w
-
-    # Another time-bound convo
-    responses_left = 12
-    conversation = Conversation(agent_order + [gs.player], gs.llm_data)
-
-    while responses_left > 0:
-        # DO THIS BETTER?, this pokes the AI if it speaks first, else we deal with the player and skip to AI
-        if responses_left == 6:
-            message = "[Enters the room]"
-        else:
-            message = input(f"{gs.player.name}: ")
-        # Normal response conversation and message printing
-        responses: list[ConversationResponse] = conversation.converse(message)
-        for i, r in enumerate(responses):
-            if r.text:
-                print(f"{r.agent}: {r.text}")
-            if r.conversation_ends:
-                responses_left = 0
-
-        responses_left -= 1
-
-    print(
-        """
-A sudden gunshot rings out, interrupting your conversation. The 
-townsfolk scatter, heading to their homes or businesses to seek cover.
-        """
-    )
+    selection = validate_input(user_input, [1,2])
+    if not isinstance(selection, int):
+        return {"message": selection}
+    agent_order: list[Agent] = b_and_c if (selection-1) == 0 else f_and_w
+    if state.step > 6:
+        state.step = 100
+        return {
+            "message": "A sudden gunshot rings out, interrupting your conversation. The townsfolk scatter, heading to their homes or businesses to seek cover."
+        }
+    if state.step == 100:
+        return "Scene completed."
+    response = chat(gs, agent_order + [gs.player], user_input, 7)
+    return response
 
 
 def second_day_afternoon(gs: GameState, state: SceneState, user_input: str):
