@@ -28,7 +28,7 @@ function CrtScreen({ conversation }: { conversation: string[] }) {
           backgroundSize: "100% 3px, 6px 100%",
         }}
       />
-      <div className="text-lg text-green-600 font-mono p-4 z-10 overflow-auto" ref={scrollRef}>
+      <div className="text-md text-green-600 font-mono p-8 z-10 overflow-auto" ref={scrollRef}>
         Welcome to Rattlesnake Ridge...
         {conversation.map((message, index) => (
           <pre key={index} className="whitespace-pre-wrap">

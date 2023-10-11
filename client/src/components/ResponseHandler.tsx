@@ -38,7 +38,7 @@ function ResponseHandler() {
       let messages = data.response?.messages ?? [];
       let options = data.response?.options ?? [];
       console.log(data);
-      setConversation((prev) => [...prev, "User: "+userInput+"\n", message, ...options, ...messages]);
+      setConversation((prev) => [...prev, "\nUser: "+userInput+"\n", message, ...options, ...messages]);
     } else {
       console.error("Failed to send the message");
     }
