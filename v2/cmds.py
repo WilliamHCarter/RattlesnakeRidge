@@ -13,11 +13,31 @@ class NumberResponse:
     message: str
 
 @dataclass(frozen=True)
+class OptionResponse:
+    message: str
+    options: list[str]
+
+@dataclass(frozen=True)
 class MessageDelay:
     message: str
     delay_ms: int
 
+# For the gunshot
+@dataclass(frozen=True)
+class SoundDelay:
+    sound_name: str
+    delay_ms: int
+
 Response = LastMessage | MessageResponse | NumberResponse | MessageDelay
+
+
+def response_to_json(r: Response) -> dict:
+    assert (r == MessageDelay("This is my message", 250))
+    return {
+        "type": "MessageDelay",
+        "message": "this is my message",
+        "delay_ms": 250,
+    }
 
 
 agent_responses = [
