@@ -6,8 +6,18 @@ Scene_t = Callable[[], Response]
 
 
 # Dummy method, improve later.
-def get_agent_response(_):
-    return "Wow... very cool..."
+agent_responses = [
+    "Hello there!",
+    "I'm fine, how are you?",
+    "Good to hear.",
+    "Goodbye!"
+]
+response_num = 0
+def get_agent_response(user_message: str | None) -> str:
+    global response_num
+    resp = agent_responses[response_num]
+    response_num += 1
+    return resp
 
 
 def test_scene() -> Response:

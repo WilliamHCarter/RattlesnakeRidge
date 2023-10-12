@@ -3,33 +3,6 @@ from time import sleep
 from server.game import initialize_game, play
 from server.response import *
 
-def local_scene_executor(scene_func):
-    send_message_to_player = print
-    wait_for_player_number_input = input
-    wait_for_player_text_input = lambda: input("You: ")
-
-    # Start the scene
-    scene = scene_func()
-    scene_response = next(scene)
-
-    while True:
-        match scene_response:
-            case LastMessage():
-                send_message_to_player(scene_response.message)
-                return
-            case MessageResponse():
-                send_message_to_player(scene_response.message)
-                response = wait_for_player_text_input()
-                scene_response = scene.send(response)
-            case NumberResponse():
-                send_message_to_player(scene_response.message)
-                response = int(wait_for_player_number_input())
-                scene_response = scene.send(response)
-            case MessageDelay():
-                send_message_to_player(scene_response.message)
-                sleep(scene_response.delay_ms / 1000)
-                scene_response = next(scene)
-
 
 def text_input() -> str:
     return input("You:  ")
@@ -60,6 +33,7 @@ def local_response_implementation(scene_response) -> None | str:
     match scene_response:
         case LastMessage():
             print_rich(scene_response)
+            sleep(1)
             return None
         case MessageResponse():
             print_rich(scene_response)
