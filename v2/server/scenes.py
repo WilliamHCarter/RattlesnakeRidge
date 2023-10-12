@@ -30,8 +30,10 @@ def test_scene() -> SceneReturn_t:
 
     # Select an agent to speak with
     selection = yield NumberResponse("Choose an agent (1-4) to speak with")
+    selection = int(selection)
     while selection not in list(range(1,4+1)):
         selection = yield NumberResponse("Bad selection. Choose an agent to speak with")
+        selection = int(selection)
 
     # Begin a conversation after a short intro
     yield MessageDelay("After a long hike up a hill or something, you see that dude you were supposed to talk with...", delay_ms=1000)
@@ -72,16 +74,15 @@ def test_scene_two() -> SceneReturn_t:
     yield LastMessage("Goodbye!")
 
 
-FIRST_DAY_INTRO = """
-\n As the sun sets on the horizon, you ride into the dusty outpost 
+FIRST_DAY_INTRO = """As the sun sets on the horizon, you ride into the dusty outpost 
 of Rattlesnake Ridge. The villagers are gathered around the town 
 center, murmuring about a heinous crime: a local prospector named Jeb, 
 known for recently striking gold, has been found dead. Word is that 
 his stash of gold is missing too. You decide to step in, and after 
 introducing yourself, you have the option to speak to the main 
 suspects: Whistle, Miss Clara, Marshal Flint, and Billy "Snake Eyes" 
-Thompson. \n
-        """
+Thompson.
+"""
 
 def first_day_scene(actors, player, llm_data) -> SceneReturn_t:
     yield MessageDelay(FIRST_DAY_INTRO)
