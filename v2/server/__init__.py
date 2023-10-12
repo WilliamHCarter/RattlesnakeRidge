@@ -24,4 +24,4 @@ CORS(app, origins=[origins])
 
 Session(app)
 
-from server.app import routes
+from server import routes
