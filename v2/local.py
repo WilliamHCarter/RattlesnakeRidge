@@ -44,23 +44,35 @@ def number_input() -> int:
             inp = input("Expected number. Try again: ")
 
 
+def print_rich(r: Response):
+    assert(isinstance(r, GenericMessageResponse))
+    if r.do_type_message:
+        delay = r.character_delay_ms / 1000.0
+        for c in r.message:
+            print(c, end='', flush=True)
+            sleep(delay)
+        print()
+    else:
+        print(r.message)
+
+
 def local_response_implementation(scene_response) -> None | str:
     match scene_response:
         case LastMessage():
-            print(scene_response.message)
+            print_rich(scene_response)
             return None
         case MessageResponse():
-            print(scene_response.message)
+            print_rich(scene_response)
             return text_input()
         case NumberResponse():
-            print(scene_response.message)
+            print_rich(scene_response)
             return number_input()
         case MessageDelay():
-            print(scene_response.message)
+            print_rich(scene_response)
             sleep(scene_response.delay_ms / 1000)
             return None
         case OptionResponse():
-            print(scene_response.message)
+            print_rich(scene_response)
             for option in scene_response.options:
                 print("-", option)
             inp = text_input()

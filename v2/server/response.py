@@ -9,6 +9,9 @@ class GenericMessageResponse:
     For example: font color, font size, character write speed (instead of it all appearing at once?)
     """
     message: str
+    # Options for t-y-p-i-n-g out message, one character at a time.
+    do_type_message: bool = False
+    character_delay_ms: int = 30
 
 @dataclass(frozen=True)
 class LastMessage(GenericMessageResponse):
@@ -24,11 +27,11 @@ class NumberResponse(GenericMessageResponse):
 
 @dataclass(frozen=True)
 class OptionResponse(GenericMessageResponse):
-    options: list[str]
+    options: list[str] = None
 
 @dataclass(frozen=True)
 class MessageDelay(GenericMessageResponse):
-    delay_ms: int
+    delay_ms: int = 1000
 
 # For the gunshot
 @dataclass(frozen=True)

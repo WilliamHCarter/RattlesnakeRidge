@@ -5,7 +5,8 @@ from server.response import Response, LastMessage
 # Todo:: all of the AI stuff lol.
 class Session:
     scene_stack: list[server.scenes.Scene_t] = [
-        server.scenes.test_scene
+        server.scenes.test_scene,
+        server.scenes.test_scene_two,
     ]
 
     def __init__(self):
