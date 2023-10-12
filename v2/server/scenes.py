@@ -63,4 +63,5 @@ def test_scene() -> Response:
 def test_scene_two() -> Response:
     yield MessageDelay("\n\nThis is a second test scene", delay_ms=700)
     yield MessageDelay("It doesn't have anything interesting, just showing it works", delay_ms=300, do_type_message=True)
+    yield MessageDelay("Custom text speed", delay_ms=600, do_type_message=True, character_delay_ms=60)
     yield LastMessage("Goodbye!")
