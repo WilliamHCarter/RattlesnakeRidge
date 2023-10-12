@@ -3,7 +3,7 @@ function AsciiBanner() {
   return (
     <div className=" ascii-banner w-full ">
       <pre className=" pc:flex justify-center hidden ">
-        <code className=" leading-[1.4rem] ">
+        <code className="leading-[1.4rem] ">
             +--------------------------------- Rattlesnake Ridge ----------------------------------+<br/>
             |                                                                                      |<br/>
             |          /\                     /\             /\          /\                 /\     |<br/>
@@ -49,7 +49,7 @@ function AsciiBanner() {
         </code>
       </pre>
       <pre className="flex justify-center laptop:hidden ">
-        <code className="leading-[1.4rem]">
+        <code className="leading-[1rem]">
             +-------------------- Rattlesnake Ridge --------------------+<br/>
             |                                                           |<br/>
             |          /\                     /\             /\         |<br/>
@@ -69,7 +69,7 @@ function AsciiBanner() {
             |~~~~~~~~@._|@@_|||_@@|~||~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|<br/>
             |           `""") )"""`                                     |<br/>
             |                                                           |<br/>
-            |    The town of hidden truths, waiting to be unraveled..   |<br/>
+            |                                                           |<br/>
             +-----------------------------------------------------------+<br/>
         </code>
       </pre>

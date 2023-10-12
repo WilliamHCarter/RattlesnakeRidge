@@ -37,7 +37,7 @@ function CrtScreen({ conversation }: { conversation: string[] }) {
         }}
       ></div>
       <div
-        className="text-md text-green-600 text-warp font-mono p-8 z-10 overflow-auto"
+        className=" text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto"
         ref={scrollRef}
       >
         <AsciiBanner />
