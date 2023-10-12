@@ -1,7 +1,10 @@
 from server.response import *
 from collections.abc import Callable
+from typing import Generator
 
 
+UserInput_t = str | int | None
+SceneReturn_t = Generator[Response, UserInput_t, None]
 Scene_t = Callable[[], Response]
 
 
@@ -20,7 +23,7 @@ def get_agent_response(user_message: str | None) -> str:
     return resp
 
 
-def test_scene() -> Response:
+def test_scene() -> SceneReturn_t:
     yield MessageDelay("This is the scene intro...", delay_ms=1000)
 
     # Select an agent to speak with
@@ -60,7 +63,7 @@ def test_scene() -> Response:
     yield LastMessage("The scene is finished fr this time.")
 
 
-def test_scene_two() -> Response:
+def test_scene_two() -> SceneReturn_t:
     yield MessageDelay("\n\nThis is a second test scene", delay_ms=700)
     yield MessageDelay("It doesn't have anything interesting, just showing it works", delay_ms=300, do_type_message=True)
     yield MessageDelay("Custom text speed", delay_ms=600, do_type_message=True, character_delay_ms=60)

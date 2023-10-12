@@ -1,13 +1,14 @@
-import server.scenes
-from server.response import Response, LastMessage
+from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two
+from server.response import Response, LastMessage, MessageResponse, NumberResponse, OptionResponse
 
 
 # Todo:: all of the AI stuff lol.
 class Session:
-    scene_stack: list[server.scenes.Scene_t] = [
-        server.scenes.test_scene,
-        server.scenes.test_scene_two,
+    scene_stack: list[Scene_t] = [
+        test_scene,
+        test_scene_two,
     ]
+    last_response = None
 
     def __init__(self):
         self.start_next_scene()
@@ -38,7 +39,30 @@ class Session:
 
         if isinstance(resp, LastMessage):
             self.start_next_scene()
+
+        self.last_response = resp
         return resp
+
+    def is_input_valid(self, user_input: UserInput_t) -> bool:
+        """Check that the user input is valid given the last response sent."""
+        if self.last_response is None: return False
+        match self.last_response:
+            case MessageResponse():
+                # Any message is good
+                return True
+            case NumberResponse():
+                # Only if this can become a number
+                try:
+                    int(user_input)
+                    return True
+                except:
+                    return False
+            case OptionResponse():
+                # Only if the response is one of the options
+                valid_options = [x.lower() for x in self.last_response.options]
+                choice = user_input.lower()
+                return choice in valid_options
+        return True
 
 
 def initialize_game() -> Session:

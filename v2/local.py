@@ -65,5 +65,4 @@ if __name__ == "__main__":
     user_response = None
     while not game.is_gameover():
         response = play(game, user_response)
-        # print(">>>>>", response)
         user_response = local_response_implementation(response)

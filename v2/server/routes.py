@@ -21,6 +21,9 @@ def play(game_id):
     
     if game_state is None:
         return jsonify(error="Invalid game ID"), 400
+
+    if not game_state.is_input_valid(user_input):
+        return jsonify(error="Bad user input"), 400
     
     response = play(game_state, user_input)
     return marshal_response(response)
