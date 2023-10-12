@@ -59,9 +59,7 @@ class Session:
                     return False
             case OptionResponse():
                 # Only if the response is one of the options
-                valid_options = [x.lower() for x in self.last_response.options]
-                choice = user_input.lower()
-                return choice in valid_options
+                return user_input in self.last_response.choices
         return True
 
 

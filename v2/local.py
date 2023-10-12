@@ -47,10 +47,10 @@ def local_response_implementation(scene_response) -> None | str:
             return None
         case OptionResponse():
             print_rich(scene_response)
-            for option in scene_response.options:
-                print("-", option)
+            for (choice, details) in scene_response.options:
+                print(f" - {choice}: {details}")
             inp = text_input()
-            while inp not in scene_response.options:
+            while inp not in scene_response.choices:
                 print("You must select one of the options.")
                 inp = text_input()
             return inp
@@ -66,3 +66,4 @@ if __name__ == "__main__":
     while not game.is_gameover():
         response = play(game, user_response)
         user_response = local_response_implementation(response)
+        assert game.is_input_valid(user_response)

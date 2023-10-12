@@ -1,6 +1,8 @@
 from server.response import *
 from collections.abc import Callable
 from typing import Generator
+from copy import copy
+from agents.conversation import Conversation
 
 
 UserInput_t = str | int | None
@@ -52,10 +54,10 @@ def test_scene() -> SceneReturn_t:
     yield MessageDelay("Oh no! That dude is now bleeding out! Someone shot them!", delay_ms=1200)
     choice = yield OptionResponse("Quick! What to do!",
                          options = [
-                             "Help dude",
-                             "Hunt"
+                             ("1", "Help dude"),
+                             ("2", "Hunt")
                          ])
-    if choice == "Help dude":
+    if choice == "1":
         yield MessageDelay("You quickly bandage them up and save their life. Good job!", delay_ms=2400)
     else:
         yield MessageDelay("You try to hunt down the shooter, but they got away!", delay_ms=2400)
@@ -68,3 +70,67 @@ def test_scene_two() -> SceneReturn_t:
     yield MessageDelay("It doesn't have anything interesting, just showing it works", delay_ms=300, do_type_message=True)
     yield MessageDelay("Custom text speed", delay_ms=600, do_type_message=True, character_delay_ms=60)
     yield LastMessage("Goodbye!")
+
+
+FIRST_DAY_INTRO = """
+\n As the sun sets on the horizon, you ride into the dusty outpost 
+of Rattlesnake Ridge. The villagers are gathered around the town 
+center, murmuring about a heinous crime: a local prospector named Jeb, 
+known for recently striking gold, has been found dead. Word is that 
+his stash of gold is missing too. You decide to step in, and after 
+introducing yourself, you have the option to speak to the main 
+suspects: Whistle, Miss Clara, Marshal Flint, and Billy "Snake Eyes" 
+Thompson. \n
+        """
+
+def first_day_scene(actors, player, llm_data) -> SceneReturn_t:
+    yield MessageDelay(FIRST_DAY_INTRO)
+
+    remaining_actors = copy(actors)
+    number_actors = len(remaining_actors)
+
+    # Talk to every actor
+    for _ in range(number_actors):
+        # Choose an actor
+        if len(remaining_actors) > 1:
+            choice = yield OptionResponse(
+                message = "Who would you like to talk to?",
+                options = [
+                    (str(i+1), actor.name + " -- " + actor.short_description) 
+                    for i, actor in enumerate(remaining_actors)
+                ])
+                
+            index = int(choice) - 1
+        else:
+            index = 0
+
+        selected_actor = remaining_actors[index]
+        remaining_actors.remove(selected_actor)
+
+        # Tell the user who they're talking to
+        yield MessageDelay(f"Time to talk to {selected_actor.name}")
+        yield MessageDelay(selected_actor.introduction, delay_ms=3200)
+        
+        # Have the conversation
+        agent_order = (
+            [selected_actor, player]
+        )
+
+        conversation = Conversation(agent_order, llm_data)
+
+        responses_left = 6
+        message = "[Enters the room]"
+        while responses_left > 0:
+            responses = conversation.converse(message)
+            for i, r in enumerate(responses):
+                if r.conversation_ends: responses_left = 0
+                if i < len(responses) - 1 or responses_left == 0:
+                    yield MessageDelay(r.text)
+                else:
+                    message = yield MessageResponse(r.text)
+            responses_left -= 1
+        
+        if len(remaining_actors) > 0:
+            yield MessageDelay("It's getting late in the day, and you have more people to meet...")
+
+    yield MessageDelay("You've had a long and arduous journey; time to go to bed for the night.")

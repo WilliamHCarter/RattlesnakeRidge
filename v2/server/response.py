@@ -15,29 +15,35 @@ class GenericMessageResponse:
 
 @dataclass(frozen=True)
 class LastMessage(GenericMessageResponse):
-    pass
+    expected_response_type = None
 
 @dataclass(frozen=True)
 class MessageResponse(GenericMessageResponse):
-    pass
+    expected_response_type = str
 
 @dataclass(frozen=True)
 class NumberResponse(GenericMessageResponse):
-    pass
+    expected_response_type = int
 
 @dataclass(frozen=True)
 class OptionResponse(GenericMessageResponse):
-    options: list[str] = None
+    options: list[tuple[str, str]] = None
+    expected_response_type = str
+    @property
+    def choices(self):
+        return [x[0] for x in self.options]
 
 @dataclass(frozen=True)
 class MessageDelay(GenericMessageResponse):
     delay_ms: int = 1000
+    expected_response_type = None
 
 # For the gunshot
 @dataclass(frozen=True)
 class SoundDelay:
     sound_name: str
     delay_ms: int
+    expected_response_type = None
 
 Response = LastMessage | MessageResponse | NumberResponse | MessageDelay | OptionResponse | SoundDelay
 
@@ -61,10 +67,13 @@ if __name__ == '__main__':
         LastMessage("This is a final message for a scene"),
         MessageResponse("This is a message that also requests a response"),
         NumberResponse("This is a message that requests a number response"),
-        MessageDelay("This is a message with a built-in delay", 1337),
+        MessageDelay("This is a message with a built-in delay", delay_ms=1337),
         OptionResponse("This is a message with a list of options for the end user to choose from",
-                       ["Option 1", "Other option"]),
-        SoundDelay("sound_file_name.mp3", 1337)
+                       options=[
+                           ("1", "Option 1"),
+                           ("2", "Other option")
+                       ]),
+        SoundDelay("sound_file_name.mp3", delay_ms=1337)
     ]
 
     for ex in examples:
