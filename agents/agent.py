@@ -35,4 +35,10 @@ class Agent:
         return self._raw['intro_talks_first']
     
 class PlayerAgent(Agent):
-    pass
+    _raw = {
+        'name': 'You',
+        'subtitle': '',
+        'intro_talks_first': False,
+    }
+
+    def __init__(self): pass
