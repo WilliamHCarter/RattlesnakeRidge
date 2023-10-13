@@ -1,6 +1,7 @@
 from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two, GameData
 from server.response import Response, LastMessage, MessageResponse, OptionResponse
 from agents.conversation import LLM_t, PlayerAgent
+import yaml
 
 
 class Session:
@@ -10,14 +11,11 @@ class Session:
     ]
     last_response = None
 
-    def __init__(self, llm: LLM_t):
+    def __init__(self, llm: LLM_t, prompts, setting):
         self.llm = llm
         self.player = PlayerAgent()
-        # todo:: get these values
-        self.prompts = {
-            'single_person_conversation_complex': 'This is a dummy value'
-        }
-        self.setting = {}
+        self.prompts = prompts
+        self.setting = setting
 
         self.start_next_scene()
 
@@ -74,6 +72,12 @@ class Session:
         return True
 
 
+def load_dict(filename: str) -> dict:
+    with open(filename, "r") as file:
+        raw = file.read()
+    return yaml.safe_load(raw)
+
+
 def initialize_game(llm: LLM_t = None) -> Session:
     # If we didn't give an llm, use the fake list chat model for now.
     # In the future, we'll require an LLM to be provided here, but I
@@ -91,8 +95,13 @@ def initialize_game(llm: LLM_t = None) -> Session:
                 ],
             )
 
+    prompts = load_dict("data/prompts.yaml")
+    setting = load_dict("data/setting.yaml")
+
     return Session(
-        llm=llm
+        llm=llm,
+        prompts=prompts,
+        setting=setting
     )
 
 

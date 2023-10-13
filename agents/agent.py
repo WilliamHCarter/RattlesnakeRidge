@@ -37,7 +37,13 @@ class Agent:
 class PlayerAgent(Agent):
     _raw = {
         'name': 'You',
+        'short_name': 'You',
         'subtitle': '',
+        'short_description': '',
+        'long_description': '',
+        'opinions': '',
+        'clues': '',
+        'introduction': '',
         'intro_talks_first': False,
     }
 
