@@ -144,8 +144,8 @@ def first_day_scene(game_data: GameData) -> SceneReturn_t:
         remaining_actors.remove(selected_actor)
 
         # Tell the user who they're talking to
-        yield MessageDelay(f"Time to talk to {selected_actor.name}")
-        yield MessageDelay(selected_actor.introduction, delay_ms=3200)
+        yield MessageDelay(f"Time to talk to {selected_actor.name}\n")
+        yield MessageDelay(selected_actor.introduction + '\n', delay_ms=3200)
         
         # Have the conversation
         conversation = make_conversation(game_data, [selected_actor, game_data.player])
@@ -156,13 +156,14 @@ def first_day_scene(game_data: GameData) -> SceneReturn_t:
             responses = conversation.converse(message)
             for i, r in enumerate(responses):
                 if r.conversation_ends: responses_left = 0
+                msg = f"{r.agent}: {r.text}"
                 if i < len(responses) - 1 or responses_left == 0:
-                    yield MessageDelay(r.text)
+                    yield MessageDelay(msg)
                 else:
-                    message = yield MessageResponse(r.text)
+                    message = yield MessageResponse(msg)
             responses_left -= 1
         
         if len(remaining_actors) > 0:
-            yield MessageDelay("It's getting late in the day, and you have more people to meet...")
+            yield MessageDelay("It's getting late in the day, and you have more people to meet...\n")
 
-    yield MessageDelay("You've had a long and arduous journey; time to go to bed for the night.")
+    yield LastMessage("\nYou've had a long and arduous journey; time to go to bed for the night.")

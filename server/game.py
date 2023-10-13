@@ -1,21 +1,23 @@
-from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two, GameData
+from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two, first_day_scene, GameData
 from server.response import Response, LastMessage, MessageResponse, OptionResponse
-from agents.conversation import LLM_t, PlayerAgent
+from agents.conversation import LLM_t, PlayerAgent, Agent
 import yaml
 
 
 class Session:
     scene_stack: list[Scene_t] = [
-        test_scene,
-        test_scene_two,
+        # test_scene,
+        # test_scene_two,
+        first_day_scene
     ]
     last_response = None
 
-    def __init__(self, llm: LLM_t, prompts, setting):
+    def __init__(self, llm: LLM_t, prompts, setting, actors):
         self.llm = llm
         self.player = PlayerAgent()
         self.prompts = prompts
         self.setting = setting
+        self.actors = actors
 
         self.start_next_scene()
 
@@ -23,7 +25,7 @@ class Session:
     def game_data(self):
         return GameData(
             llm=self.llm,
-            actors=[],
+            actors=self.actors,
             prompts=self.prompts,
             player=self.player,
             setting_data=self.setting
@@ -98,10 +100,17 @@ def initialize_game(llm: LLM_t = None) -> Session:
     prompts = load_dict("data/prompts.yaml")
     setting = load_dict("data/setting.yaml")
 
+    # Create the actors
+    character_names = ["flint", "billy", "clara", "whistle"]
+    actors = [
+        Agent(datafile=f"data/characters/{name}.yaml") for name in character_names
+    ]
+
     return Session(
         llm=llm,
         prompts=prompts,
-        setting=setting
+        setting=setting,
+        actors=actors
     )
 
 
