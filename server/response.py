@@ -15,16 +15,16 @@ class GenericMessageResponse:
 
 @dataclass(frozen=True)
 class LastMessage(GenericMessageResponse):
-    expected_response_type = None
+    expects_user_input = False
 
 @dataclass(frozen=True)
 class MessageResponse(GenericMessageResponse):
-    expected_response_type = str
+    expects_user_input = True
 
 @dataclass(frozen=True)
 class OptionResponse(GenericMessageResponse):
     options: list[tuple[str, str]] = None
-    expected_response_type = str
+    expects_user_input = True
     @property
     def choices(self):
         return [x[0] for x in self.options]
@@ -32,20 +32,22 @@ class OptionResponse(GenericMessageResponse):
 @dataclass(frozen=True)
 class MessageDelay(GenericMessageResponse):
     delay_ms: int = 1000
-    expected_response_type = None
+    expects_user_input = False
 
 # For the gunshot
 @dataclass(frozen=True)
 class SoundDelay:
     sound_name: str
     delay_ms: int
-    expected_response_type = None
+    expects_user_input = False
 
 Response = LastMessage | MessageResponse | MessageDelay | OptionResponse | SoundDelay
 
 
 def marshal_response(r: Response) -> dict:
     data = copy(r.__dict__)
+    # Include the expects_user_input field explicitly as it may be otherwise optimized out
+    data["expects_user_input"] = r.expects_user_input
     data["type"] = r.__class__.__name__
     return data
 
