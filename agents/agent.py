@@ -41,4 +41,5 @@ class PlayerAgent(Agent):
         'intro_talks_first': False,
     }
 
-    def __init__(self): pass
+    def __init__(self):
+        self._memory = ConversationBufferMemory()
