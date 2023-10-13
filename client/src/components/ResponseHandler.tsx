@@ -39,9 +39,7 @@ function ResponseHandler() {
 
       console.log(data);
       setConversation((prev) => [...prev, "\nUser: "+userInput+"\n", message, ...options]);
-      //if (!data.response?.options){
-      //  handleUserInput("");
-      //}
+      //TODO: add expects-response filter
     } else {
       console.error("Failed to send the message");
     }
