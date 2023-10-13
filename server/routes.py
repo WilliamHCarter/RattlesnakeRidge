@@ -23,7 +23,6 @@ def play(game_id):
         return jsonify(error="Invalid game ID"), 400
 
     if not game_state.is_input_valid(user_input):
-        print(f"Got bad input: {user_input}")
         return jsonify(error="Bad user input"), 400
     
     response = play_game(game_state, user_input)

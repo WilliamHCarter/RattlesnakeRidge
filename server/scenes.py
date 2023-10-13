@@ -1,254 +1,138 @@
+from server.response import *
+from collections.abc import Callable
+from typing import Generator
 from copy import copy
-from dataclasses import dataclass
-from server.agents.conversation import Conversation, ConversationResponse, LLMData
-from server.agents.agent import Agent, PlayerAgent
+# from agents.conversation import Conversation
 
 
-# ================ Data Classes ===================#
-@dataclass
-class SceneState:
-    def __init__(self):
-        self.step: int = 0
-        self.selected_agent: Agent = None
+UserInput_t = str | int | None
+SceneReturn_t = Generator[Response, UserInput_t, None]
+Scene_t = Callable[[], Response]
 
 
-@dataclass
-class GameState:
-    scene_state: SceneState
-    agents: list[Agent | PlayerAgent]
-    intro_agents: list[Agent]
-    player: PlayerAgent
-    current_scene: str
-    llm_data: LLMData
+# Dummy method, improve later.
+agent_responses = [
+    "Hello there!",
+    "I'm fine, how are you?",
+    "Good to hear.",
+    "Goodbye!"
+]
+response_num = 0
+def get_agent_response(user_message: str | None) -> str:
+    global response_num
+    resp = agent_responses[response_num]
+    response_num += 1
+    return resp
 
 
-# ================ Helper Functions ===================#
-def validate_input(input_message: str, valid_inputs: list[int]):
-    print(input_message)
-    if input_message.isdigit():
-        number = int(input_message)
-        if number in valid_inputs:
-            return number
-        else:
-            return "Number is out of range!"
-    else:
-        return "Invalid input. Please enter a number!"
+def test_scene() -> SceneReturn_t:
+    yield MessageDelay("This is the scene intro...", delay_ms=1000)
 
-
-def chat(gs: GameState, order: list[Agent | PlayerAgent], input: str, max_steps: int):
-    conversation = Conversation(order, gs.llm_data)
-    if order[0] != gs.player:
-        input = "[Enters the room]"
-    responses: list[ConversationResponse] = conversation.converse(input)
-    response_texts = [f"{r.agent}: {r.text}" for r in responses if r.text]
-
-    if any(r.conversation_ends for r in responses):
-        gs.scene_state.step = max_steps
-        response_texts.append("The conversation has ended.")
-    else:
-        gs.scene_state.step += 1
-
-    return {"messages": response_texts}
-
-
-# ================ Scene Functions ===================#
-
-
-def first_day_intro(gs: GameState, state: SceneState, user_input: str):
-    # Scene intro and character select
-    intro_text = ""
-    if state.step == 0:
-        state.step += 1
-        intro_text = 'As the sun sets on the horizon, you ride into the dusty outpost of Rattlesnake Ridge. The villagers are gathered around the town center, murmuring about a heinous crime: a local prospector named Jeb, known for recently striking gold, has been found dead. Word is that his stash of gold is missing too. You decide to step in, and after introducing yourself, you have the option to speak to the main suspects: Whistle, Miss Clara, Marshal Flint, and Billy "Snake Eyes" Thompson. \n\n'
-    if gs.intro_agents:
-        # Select a person to talk to
-        if len(gs.intro_agents) > 1:
-            if state.step == 1:
-                state.step += 1
-                return {
-                    "message": intro_text + "Who would you like to talk to?",
-                    "options": [
-                        f"{i+1}: {agent.name} -- {agent.short_description}"
-                        for i, agent in enumerate(gs.intro_agents)
-                    ],
-                    "system": "Enter a number (1-"
-                    + str(len(gs.intro_agents))
-                    + "): ",
-                }
-            if state.step == 2:
-                selection = validate_input(
-                    user_input, list(range(1, len(gs.intro_agents) + 1))
-                )
-                if not isinstance(selection, int):
-                    return {"message": selection}
-                state.step += 1
-                state.selected_agent = gs.intro_agents[selection - 1]
-
-            if 3 <= state.step:
-                agent_order = (
-                    [state.selected_agent, gs.player]
-                    if state.selected_agent.does_talk_first_on_first_meeting
-                    else [gs.player, state.selected_agent]
-                )
-                responses = chat(gs, agent_order, user_input, 7)
-
-                # Print the introduction for this character
-                if state.step == 3:
-                    responses["message"] = state.selected_agent.introduction
-
-                if state.step > 6:
-                    gs.intro_agents.remove(state.selected_agent)
-                    state.step = 1
-
-                return responses
-
-        else:
-            state.selected_agent = gs.intro_agents[0]
-            if state.step == 1:
-                intro_text = "\nTime to talk to " + state.selected_agent.name + "\n"
-
-            responses = chat(gs, [state.selected_agent, gs.player], user_input, 7)
-            if state.step > 6:
-                gs.intro_agents.remove(state.selected_agent)
-                state.step = 1
-            return {"message": "" + intro_text, **responses}
-
-    else:
-        state.step = 0
-        return "Scene completed."
-
-
-def first_night_cutscene(gs: GameState, state: SceneState, user_input: str):
-    if state.step == 0:
-        state.step += 1
-        return {
-            "message": "The moon is high when a piercing scream echoes through the night. Everyone rushes out to find Whistle's Saloon in disarray -- a scuffle has occurred. You notice a bloodied poker card on the floor, the ace of spades. This might be a clue, but to what?"
-        }
-    if state.step == 1:
-        state.step = 0
-        return "Scene completed."
-
-
-def second_day_intro(gs: GameState, state: SceneState, user_input: str):
-    intro_text = ""
-    if state.step == 0:
-        state.step += 1
-        intro_text = "Sunlight reveals tense faces. The townfolk have formed two groups. On one side, by the water trough, stands Whistle, looking ruffled,  and Miss Clara, her comforting hand on his arm. They seem to be arguing with the other group, consisting of Marshal Flint and Billy, who are on the steps of the Marshal's Office. You need to make a choice quickly: which duo will you approach to get their side of the story?'\n\n"
-
-    if state.step == 1:
-        state.step += 1
-        return {
-            "message": intro_text + "Who would you like to talk to?",
-            "options": ["1: Billy and Clara", "2: Flint and Whistle"],
-            "system": "Enter a number (1-2): ",
-        }
-
-    b_and_c: list[Agent] = [
-        agent
-        for agent in gs.agents
-        if agent.name in ['Billy "Snake Eyes" Thompson', "Miss Clara"]
+    # Select an agent to speak with
+    options=[
+        ("1", "Marshal Flint"),
+        ("2", "Clara"),
     ]
-    f_and_w: list[Agent] = [
-        agent for agent in gs.agents if agent.name in ["Marshal Flint", "Whistle"]
-    ]
+    selection = yield OptionResponse("Choose a person to speak with", options=options)
+    yield MessageDelay(f"You chose to meet with {options[int(selection) - 1][1]}!", delay_ms = 700)
 
-    selection = validate_input(user_input, [1, 2])
-    if not isinstance(selection, int):
-        return {"message": selection}
-    agent_order: list[Agent] = b_and_c if (selection - 1) == 0 else f_and_w
-    if state.step >= 100:
-        state.step = 0
-        return "Scene completed."
-    if state.step > 6:
-        state.step = 100
-        return {
-            "message": "A sudden gunshot rings out, interrupting your conversation. The townsfolk scatter, heading to their homes or businesses to seek cover."
-        }
-    response = chat(gs, agent_order + [gs.player], user_input, 7)
-    return response
+    # Begin a conversation after a short intro
+    yield MessageDelay("After a long hike up a hill or something, you see that dude you were supposed to talk with...", delay_ms=1000)
 
+    # Have a conversation
+    messages_left = 4
+    user_input = "First time"
+    while messages_left > 0:
+        response = f"Dude: {get_agent_response(user_input)}"
+        if messages_left > 1:
+            user_input = yield MessageResponse(response)
+        else:
+            yield MessageDelay(response, delay_ms=300)
+        messages_left -= 1
 
-def second_day_afternoon(gs: GameState, state: SceneState, user_input: str):
-    match state.step:
-        # Scene intro
-        case 0:
-            state.step += 1
-            return {
-                "message": "The town is quieter now, and the townspeople's nerves are on edge. You have the chance to speak to one more person in-depth. Who would you like to talk to?",
-                "options": [
-                    f"{i+1}: {agent.name} -- {agent.short_description}"
-                    for i, agent in enumerate(gs.agents)
-                ],
-            }
-
-        # Validate Agent Selection
-        case 1:
-            selection = validate_input(user_input, [1, 2, 3, 4])
-            if not isinstance(selection, int):
-                return {"message": selection}
-            state.selected_agent = gs.agents[selection - 1]
-            state.step += 1
-            return {
-                "message": f"Time to talk to {state.selected_agent.name}.",
-            }
-
-        # Have a Conversation
-        case _ if 1 < state.step < 8:
-            agent_order = [gs.player, state.selected_agent]
-            response = chat(gs, agent_order, user_input, 8)
-            return response
-
-        case 8:
-            state.step = 0
-            return "Scene completed."
-
-        case _:
-            raise Exception("Invalid step")
-
-
-def final_confrontation(gs: GameState, state: SceneState, user_input: str):
-    if state.step == 0:
-        state.step += 1
-        return {
-            "message": "Night has fallen. You gather everyone in the Saloon, where the mood is palpable. Shadows dance on the walls as you stand before the suspects. Here, you must make your case to the townfolk, after which you must aim your gun and pulling the trigger on the character you believe to be the killer."
-        }
-    if state.step < 12:
-        responses_left = 12 - state.step
-        responses = chat(gs, [gs.player] + gs.agents, user_input, 12)
-        return {"message": "You have " + str(responses_left) + " statements left.\n", **responses}
-    if state.step == 12:
-        state.step += 1
-        # Select a person to eliminate
-        return {
-            "message": "Who is your final target?",
-            "options": [
-                f"{i+1}: {agent.name} -- {agent.short_description}"
-                for i, agent in enumerate(gs.agents)
-            ],
-            "system": "Enter a number (1-4): ",
-        }
-    if state.step == 13:
-        selection = validate_input(user_input, [1, 2, 3, 4])
-        selected_agent = gs.agents[selection - 1]
-
-    # Agents speaks their last words
-    conversation = Conversation([selected_agent], gs.llm_data)
-    final = conversation.speak_directly(
-        "You've been shot by the player, speak your dying words given your played experience",
-        selected_agent,
-    )
-    for i, r in enumerate(final):
-        if r.text:
-            print(f"{r.agent}: {r.text}")
-    if selected_agent.name == "Whistle":
-        return {
-            "message": "You aim your gun at Whistle, and pull the trigger. The bullet flies through the air, and hits Whistle square in the chest. He falls to the ground, dead. The townsfolk cheer, and you are hailed as a hero. The ghost of Jeb can rest easy."
-        }
+    # Example of some more scripting here with the other options
+    yield MessageDelay("Your conversation is over, and the scene is finished.", delay_ms=3000)
+    yield MessageDelay("Wait... who is that over there?!", do_type_message=True, delay_ms=1500)
+    yield SoundDelay("gunshot.mp3", 2000)
+    yield MessageDelay("Oh no! That dude is now bleeding out! Someone shot them!", delay_ms=1200)
+    choice = yield OptionResponse("Quick! What to do!",
+                         options = [
+                             ("1", "Help dude"),
+                             ("2", "Hunt")
+                         ])
+    if choice == "1":
+        yield MessageDelay("You quickly bandage them up and save their life. Good job!", delay_ms=2400)
     else:
-        return {
-            "message": "As "
-            + selected_agent.name
-            + " crumples to the ground, chaos ensues. The real killer takes advantage of the confusion, locking you up in the Marshal's Office with accusations of murder, while they make their escape, leaving you with the weight of your misjudgment.",
-            "system": "\n\nThanks For Playing Rattlesnake Ridge! \n Built by Will Carter and Aidan McHugh"
-        }
+        yield MessageDelay("You try to hunt down the shooter, but they got away!", delay_ms=2400)
 
+    yield LastMessage("The scene is finished fr this time.")
+
+
+def test_scene_two() -> SceneReturn_t:
+    yield MessageDelay("\n\nThis is a second test scene", delay_ms=700)
+    yield MessageDelay("It doesn't have anything interesting, just showing it works", delay_ms=300, do_type_message=True)
+    yield MessageDelay("Custom text speed", delay_ms=600, do_type_message=True, character_delay_ms=60)
+    yield LastMessage("Goodbye!")
+
+
+FIRST_DAY_INTRO = """As the sun sets on the horizon, you ride into the dusty outpost 
+of Rattlesnake Ridge. The villagers are gathered around the town 
+center, murmuring about a heinous crime: a local prospector named Jeb, 
+known for recently striking gold, has been found dead. Word is that 
+his stash of gold is missing too. You decide to step in, and after 
+introducing yourself, you have the option to speak to the main 
+suspects: Whistle, Miss Clara, Marshal Flint, and Billy "Snake Eyes" 
+Thompson.
+"""
+
+# def first_day_scene(actors, player, llm_data) -> SceneReturn_t:
+#     yield MessageDelay(FIRST_DAY_INTRO)
+
+#     remaining_actors = copy(actors)
+#     number_actors = len(remaining_actors)
+
+#     # Talk to every actor
+#     for _ in range(number_actors):
+#         # Choose an actor
+#         if len(remaining_actors) > 1:
+#             choice = yield OptionResponse(
+#                 message = "Who would you like to talk to?",
+#                 options = [
+#                     (str(i+1), actor.name + " -- " + actor.short_description) 
+#                     for i, actor in enumerate(remaining_actors)
+#                 ])
+                
+#             index = int(choice) - 1
+#         else:
+#             index = 0
+
+#         selected_actor = remaining_actors[index]
+#         remaining_actors.remove(selected_actor)
+
+#         # Tell the user who they're talking to
+#         yield MessageDelay(f"Time to talk to {selected_actor.name}")
+#         yield MessageDelay(selected_actor.introduction, delay_ms=3200)
+        
+#         # Have the conversation
+#         agent_order = (
+#             [selected_actor, player]
+#         )
+
+#         conversation = Conversation(agent_order, llm_data)
+
+#         responses_left = 6
+#         message = "[Enters the room]"
+#         while responses_left > 0:
+#             responses = conversation.converse(message)
+#             for i, r in enumerate(responses):
+#                 if r.conversation_ends: responses_left = 0
+#                 if i < len(responses) - 1 or responses_left == 0:
+#                     yield MessageDelay(r.text)
+#                 else:
+#                     message = yield MessageResponse(r.text)
+#             responses_left -= 1
+        
+#         if len(remaining_actors) > 0:
+#             yield MessageDelay("It's getting late in the day, and you have more people to meet...")
+
+#     yield MessageDelay("You've had a long and arduous journey; time to go to bed for the night.")
