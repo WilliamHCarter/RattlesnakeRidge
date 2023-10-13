@@ -35,4 +35,17 @@ class Agent:
         return self._raw['intro_talks_first']
     
 class PlayerAgent(Agent):
-    pass
+    _raw = {
+        'name': 'You',
+        'short_name': 'You',
+        'subtitle': '',
+        'short_description': '',
+        'long_description': '',
+        'opinions': '',
+        'clues': '',
+        'introduction': '',
+        'intro_talks_first': False,
+    }
+
+    def __init__(self):
+        self._memory = ConversationBufferMemory()

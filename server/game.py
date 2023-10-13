@@ -1,17 +1,35 @@
-from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two
+from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two, first_day_scene, GameData
 from server.response import Response, LastMessage, MessageResponse, OptionResponse
+from server.agents.conversation import LLM_t, PlayerAgent, Agent
+import yaml
 
 
-# Todo:: all of the AI stuff lol.
 class Session:
     scene_stack: list[Scene_t] = [
-        test_scene,
-        test_scene_two,
+        # test_scene,
+        # test_scene_two,
+        first_day_scene
     ]
     last_response = None
 
-    def __init__(self):
+    def __init__(self, llm: LLM_t, prompts, setting, actors):
+        self.llm = llm
+        self.player = PlayerAgent()
+        self.prompts = prompts
+        self.setting = setting
+        self.actors = actors
+
         self.start_next_scene()
+
+    @property
+    def game_data(self):
+        return GameData(
+            llm=self.llm,
+            actors=self.actors,
+            prompts=self.prompts,
+            player=self.player,
+            setting_data=self.setting
+        )
 
     def start_next_scene(self) -> bool:
         if len(self.scene_stack) == 0: 
@@ -19,7 +37,7 @@ class Session:
             return False
         next_scene = self.scene_stack[0]
         self.scene_stack = self.scene_stack[1:]
-        self.current_scene = next_scene()
+        self.current_scene = next_scene(self.game_data)
         self.scene_started = False
 
     def is_gameover(self) -> bool:
@@ -56,8 +74,46 @@ class Session:
         return True
 
 
-def initialize_game() -> Session:
-    return Session()
+def load_dict(filename: str) -> dict:
+    with open(filename, "r") as file:
+        raw = file.read()
+    return yaml.safe_load(raw)
+
+
+def initialize_game(llm: LLM_t = None) -> Session:
+    # If we didn't give an llm, use the fake list chat model for now.
+    # In the future, we'll require an LLM to be provided here, but I
+    # don't want to break anything right now
+    # todo:: update.
+    if llm is None:
+        from langchain.chat_models import FakeListChatModel
+        llm = FakeListChatModel(
+            verbose=True,
+            responses=[
+                    "Hi there, I'm talking to you.",
+                    "This is a response",
+                    "I say something else too!",
+                    "Ok, goodbye now!",
+                ],
+            )
+
+    data_dir = "server/data/"
+
+    prompts = load_dict(data_dir + "prompts.yaml")
+    setting = load_dict(data_dir + "setting.yaml")
+
+    # Create the actors
+    character_names = ["flint", "billy", "clara", "whistle"]
+    actors = [
+        Agent(datafile=data_dir + f"characters/{name}.yaml") for name in character_names
+    ]
+
+    return Session(
+        llm=llm,
+        prompts=prompts,
+        setting=setting,
+        actors=actors
+    )
 
 
 def play_game(session: Session, user_input: str) -> Response:

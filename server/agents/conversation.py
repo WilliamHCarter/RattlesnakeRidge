@@ -6,6 +6,9 @@ from langchain.schema.messages import ChatMessage
 from server.agents.agent import Agent, PlayerAgent
 
 
+LLM_t = ChatOpenAI | FakeListChatModel
+
+
 @dataclass
 class ConversationResponse:
     text: str
@@ -15,7 +18,7 @@ class ConversationResponse:
 
 @dataclass
 class LLMData:
-    llm: ChatOpenAI | FakeListChatModel
+    llm: LLM_t
     prompt: str
     extra_flavor: dict
 
