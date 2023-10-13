@@ -1,5 +1,6 @@
 import uuid
 from flask import Flask, request, jsonify
+from flask_sock import Sock, 
 from server.game import play_game, initialize_game  
 from server import game_states, app
 from server.response import marshal_response
@@ -39,6 +40,25 @@ def end_game(game_id):
 @app.route('/test', methods=['GET'])
 def test():
     return jsonify({"message": "Success"})
+
+
+# Websocket version of the game
+sock = Sock(app)
+
+@sock.route('/ws')
+def ws_game(ws):
+    # Create the game instance
+    game = initialize_game()
+
+    while not game.is_gameover():
+        data = ws.receive()
+        user_input = data.json.get('input')
+
+        if not game.is_input_valid(user_input):
+            ws.send(jsonify(error="Bad user input"), 400)
+        
+        response = play_game(game, user_input)
+        ws.send(jsonify(response=marshal_response(response)))
 
 
 if __name__ == '__main__':
