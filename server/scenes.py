@@ -2,7 +2,7 @@ from server.response import *
 from collections.abc import Callable
 from typing import Generator
 from copy import copy
-from agents.conversation import LLM_t, Conversation, Agent, LLMData, PlayerAgent
+from server.agents.conversation import LLM_t, Conversation, Agent, LLMData, PlayerAgent
 
 
 @dataclass(frozen=True)

@@ -3,7 +3,7 @@ from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from langchain.prompts import PromptTemplate
 from langchain.schema.messages import ChatMessage
-from agents.agent import Agent, PlayerAgent
+from server.agents.agent import Agent, PlayerAgent
 
 
 LLM_t = ChatOpenAI | FakeListChatModel

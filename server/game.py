@@ -1,6 +1,6 @@
 from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two, first_day_scene, GameData
 from server.response import Response, LastMessage, MessageResponse, OptionResponse
-from agents.conversation import LLM_t, PlayerAgent, Agent
+from server.agents.conversation import LLM_t, PlayerAgent, Agent
 import yaml
 
 
@@ -97,13 +97,15 @@ def initialize_game(llm: LLM_t = None) -> Session:
                 ],
             )
 
-    prompts = load_dict("data/prompts.yaml")
-    setting = load_dict("data/setting.yaml")
+    data_dir = "server/data/"
+
+    prompts = load_dict(data_dir + "prompts.yaml")
+    setting = load_dict(data_dir + "setting.yaml")
 
     # Create the actors
     character_names = ["flint", "billy", "clara", "whistle"]
     actors = [
-        Agent(datafile=f"data/characters/{name}.yaml") for name in character_names
+        Agent(datafile=data_dir + f"characters/{name}.yaml") for name in character_names
     ]
 
     return Session(
