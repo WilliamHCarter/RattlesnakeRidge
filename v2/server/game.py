@@ -1,5 +1,5 @@
 from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two
-from server.response import Response, LastMessage, MessageResponse, NumberResponse, OptionResponse
+from server.response import Response, LastMessage, MessageResponse, OptionResponse
 
 
 # Todo:: all of the AI stuff lol.
@@ -45,18 +45,11 @@ class Session:
 
     def is_input_valid(self, user_input: UserInput_t) -> bool:
         """Check that the user input is valid given the last response sent."""
-        if self.last_response is None: return False
+        if self.last_response is None: return True
         match self.last_response:
             case MessageResponse():
                 # Any message is good
                 return True
-            case NumberResponse():
-                # Only if this can become a number
-                try:
-                    int(user_input)
-                    return True
-                except:
-                    return False
             case OptionResponse():
                 # Only if the response is one of the options
                 return user_input in self.last_response.choices
@@ -67,5 +60,5 @@ def initialize_game() -> Session:
     return Session()
 
 
-def play(session: Session, user_input: str) -> Response:
+def play_game(session: Session, user_input: str) -> Response:
     return session.play(user_input)

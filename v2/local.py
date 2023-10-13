@@ -8,15 +8,6 @@ def text_input() -> str:
     return input("You:  ")
 
 
-def number_input() -> int:
-    inp = input()
-    while True:
-        try:
-            return int(inp)
-        except:
-            inp = input("Expected number. Try again: ")
-
-
 def print_rich(r: Response):
     assert(isinstance(r, GenericMessageResponse))
     if r.do_type_message:
@@ -38,9 +29,6 @@ def local_response_implementation(scene_response) -> None | str:
         case MessageResponse():
             print_rich(scene_response)
             return text_input()
-        case NumberResponse():
-            print_rich(scene_response)
-            return number_input()
         case MessageDelay():
             print_rich(scene_response)
             sleep(scene_response.delay_ms / 1000)

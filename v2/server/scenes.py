@@ -2,7 +2,7 @@ from server.response import *
 from collections.abc import Callable
 from typing import Generator
 from copy import copy
-from agents.conversation import Conversation
+# from agents.conversation import Conversation
 
 
 UserInput_t = str | int | None
@@ -29,11 +29,12 @@ def test_scene() -> SceneReturn_t:
     yield MessageDelay("This is the scene intro...", delay_ms=1000)
 
     # Select an agent to speak with
-    selection = yield NumberResponse("Choose an agent (1-4) to speak with")
-    selection = int(selection)
-    while selection not in list(range(1,4+1)):
-        selection = yield NumberResponse("Bad selection. Choose an agent to speak with")
-        selection = int(selection)
+    options=[
+        ("1", "Marshal Flint"),
+        ("2", "Clara"),
+    ]
+    selection = yield OptionResponse("Choose a person to speak with", options=options)
+    yield MessageDelay(f"You chose to meet with {options[int(selection) - 1][1]}!", delay_ms = 700)
 
     # Begin a conversation after a short intro
     yield MessageDelay("After a long hike up a hill or something, you see that dude you were supposed to talk with...", delay_ms=1000)
@@ -84,54 +85,54 @@ suspects: Whistle, Miss Clara, Marshal Flint, and Billy "Snake Eyes"
 Thompson.
 """
 
-def first_day_scene(actors, player, llm_data) -> SceneReturn_t:
-    yield MessageDelay(FIRST_DAY_INTRO)
+# def first_day_scene(actors, player, llm_data) -> SceneReturn_t:
+#     yield MessageDelay(FIRST_DAY_INTRO)
 
-    remaining_actors = copy(actors)
-    number_actors = len(remaining_actors)
+#     remaining_actors = copy(actors)
+#     number_actors = len(remaining_actors)
 
-    # Talk to every actor
-    for _ in range(number_actors):
-        # Choose an actor
-        if len(remaining_actors) > 1:
-            choice = yield OptionResponse(
-                message = "Who would you like to talk to?",
-                options = [
-                    (str(i+1), actor.name + " -- " + actor.short_description) 
-                    for i, actor in enumerate(remaining_actors)
-                ])
+#     # Talk to every actor
+#     for _ in range(number_actors):
+#         # Choose an actor
+#         if len(remaining_actors) > 1:
+#             choice = yield OptionResponse(
+#                 message = "Who would you like to talk to?",
+#                 options = [
+#                     (str(i+1), actor.name + " -- " + actor.short_description) 
+#                     for i, actor in enumerate(remaining_actors)
+#                 ])
                 
-            index = int(choice) - 1
-        else:
-            index = 0
+#             index = int(choice) - 1
+#         else:
+#             index = 0
 
-        selected_actor = remaining_actors[index]
-        remaining_actors.remove(selected_actor)
+#         selected_actor = remaining_actors[index]
+#         remaining_actors.remove(selected_actor)
 
-        # Tell the user who they're talking to
-        yield MessageDelay(f"Time to talk to {selected_actor.name}")
-        yield MessageDelay(selected_actor.introduction, delay_ms=3200)
+#         # Tell the user who they're talking to
+#         yield MessageDelay(f"Time to talk to {selected_actor.name}")
+#         yield MessageDelay(selected_actor.introduction, delay_ms=3200)
         
-        # Have the conversation
-        agent_order = (
-            [selected_actor, player]
-        )
+#         # Have the conversation
+#         agent_order = (
+#             [selected_actor, player]
+#         )
 
-        conversation = Conversation(agent_order, llm_data)
+#         conversation = Conversation(agent_order, llm_data)
 
-        responses_left = 6
-        message = "[Enters the room]"
-        while responses_left > 0:
-            responses = conversation.converse(message)
-            for i, r in enumerate(responses):
-                if r.conversation_ends: responses_left = 0
-                if i < len(responses) - 1 or responses_left == 0:
-                    yield MessageDelay(r.text)
-                else:
-                    message = yield MessageResponse(r.text)
-            responses_left -= 1
+#         responses_left = 6
+#         message = "[Enters the room]"
+#         while responses_left > 0:
+#             responses = conversation.converse(message)
+#             for i, r in enumerate(responses):
+#                 if r.conversation_ends: responses_left = 0
+#                 if i < len(responses) - 1 or responses_left == 0:
+#                     yield MessageDelay(r.text)
+#                 else:
+#                     message = yield MessageResponse(r.text)
+#             responses_left -= 1
         
-        if len(remaining_actors) > 0:
-            yield MessageDelay("It's getting late in the day, and you have more people to meet...")
+#         if len(remaining_actors) > 0:
+#             yield MessageDelay("It's getting late in the day, and you have more people to meet...")
 
-    yield MessageDelay("You've had a long and arduous journey; time to go to bed for the night.")
+#     yield MessageDelay("You've had a long and arduous journey; time to go to bed for the night.")

@@ -22,10 +22,6 @@ class MessageResponse(GenericMessageResponse):
     expected_response_type = str
 
 @dataclass(frozen=True)
-class NumberResponse(GenericMessageResponse):
-    expected_response_type = int
-
-@dataclass(frozen=True)
 class OptionResponse(GenericMessageResponse):
     options: list[tuple[str, str]] = None
     expected_response_type = str
@@ -45,7 +41,7 @@ class SoundDelay:
     delay_ms: int
     expected_response_type = None
 
-Response = LastMessage | MessageResponse | NumberResponse | MessageDelay | OptionResponse | SoundDelay
+Response = LastMessage | MessageResponse | MessageDelay | OptionResponse | SoundDelay
 
 
 def marshal_response(r: Response) -> dict:
@@ -66,7 +62,6 @@ if __name__ == '__main__':
     examples = [
         LastMessage("This is a final message for a scene"),
         MessageResponse("This is a message that also requests a response"),
-        NumberResponse("This is a message that requests a number response"),
         MessageDelay("This is a message with a built-in delay", delay_ms=1337),
         OptionResponse("This is a message with a list of options for the end user to choose from",
                        options=[
