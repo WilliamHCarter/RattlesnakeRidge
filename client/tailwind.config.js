@@ -24,6 +24,9 @@ export default {
         'laptop': '1024px',
         'tablet': '600px',
       },
+      keyframes: {
+        
+      }
     },
 
   },
