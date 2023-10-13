@@ -1,6 +1,6 @@
 from time import sleep
 
-from server.game import initialize_game, play
+from server.game import initialize_game, play_game
 from server.response import *
 
 
@@ -52,6 +52,6 @@ if __name__ == "__main__":
     game = initialize_game()
     user_response = None
     while not game.is_gameover():
-        response = play(game, user_response)
+        response = play_game(game, user_response)
         user_response = local_response_implementation(response)
         assert game.is_input_valid(user_response)

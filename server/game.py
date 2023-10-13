@@ -1,85 +1,64 @@
-import os
-import yaml
-from dotenv import load_dotenv
-from server.agents.conversation import LLMData
-from server.agents.agent import Agent, PlayerAgent
-from langchain.chat_models import ChatOpenAI, FakeListChatModel
-from server.scenes import (
-    SceneState,
-    GameState,
-    first_day_intro,
-    first_night_cutscene,
-    second_day_intro,
-    second_day_afternoon,
-    final_confrontation,
-)
-
-# A mapping of scene names to scene functions
-SCENES = [
-    first_day_intro,
-    first_night_cutscene,
-    second_day_intro,
-    second_day_afternoon,
-    final_confrontation,
-]
+from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two
+from server.response import Response, LastMessage, MessageResponse, OptionResponse
 
 
-def initialize_game() -> GameState:
-    def load_dict(filename: str) -> dict:
-        with open(filename, "r") as file:
-            raw = file.read()
-        return yaml.safe_load(raw)
-
-    # ===== Setup the env and chat model =====#
-    prompts = load_dict("data/prompts.yaml")
-    setting = load_dict("data/setting.yaml")
-    load_dotenv()
-
-    # For local builds, go to .env.template file and follow directions.
-    api_key = os.environ.get("LLM_API_KEY")
-    model = "gpt-3.5-turbo"
-
-    # Set the Model
-    llm = FakeListChatModel(
-        verbose=True,
-        responses=[
-            f"Hi there, I'm talking to you.",
-            "That is not nice",
-            "[QUIT] This conversation is over.",
-        ],
-    )
-    # llm = ChatOpenAI(openai_api_key=api_key, model=model)
-    llm_data: LLMData = LLMData(
-        llm, prompts["single_person_conversation_complex"], setting
-    )
-
-    # ===== Setup the agents =====#
-    character_names = ["flint", "billy", "clara", "whistle"]
-
-    agents = [
-        Agent(datafile=f"data/characters/{name}.yaml") for name in character_names
+# Todo:: all of the AI stuff lol.
+class Session:
+    scene_stack: list[Scene_t] = [
+        test_scene,
+        test_scene_two,
     ]
-    player = PlayerAgent(datafile="data/characters/player.yaml")
+    last_response = None
 
-    return GameState(
-        agents=agents,
-        player=player,
-        intro_agents=agents.copy(),
-        current_scene=SCENES[0],
-        llm_data=llm_data,
-        scene_state=SceneState(),
-    )
+    def __init__(self):
+        self.start_next_scene()
+
+    def start_next_scene(self) -> bool:
+        if len(self.scene_stack) == 0: 
+            self.current_scene = None
+            return False
+        next_scene = self.scene_stack[0]
+        self.scene_stack = self.scene_stack[1:]
+        self.current_scene = next_scene()
+        self.scene_started = False
+
+    def is_gameover(self) -> bool:
+        return len(self.scene_stack) == 0 and self.current_scene is None
+
+    def play(self, user_input: str) -> Response:
+        if self.is_gameover():
+            return LastMessage("The game is over.")
+
+        if not self.scene_started:
+            if user_input is not None:
+                print(f'[WARN] Got user input "{user_input}" at the beginning of a scene. This is unexpected.')
+            resp = next(self.current_scene)
+            self.scene_started = True
+        else:
+            resp = self.current_scene.send(user_input)
+
+        if isinstance(resp, LastMessage):
+            self.start_next_scene()
+
+        self.last_response = resp
+        return resp
+
+    def is_input_valid(self, user_input: UserInput_t) -> bool:
+        """Check that the user input is valid given the last response sent."""
+        if self.last_response is None: return True
+        match self.last_response:
+            case MessageResponse():
+                # Any message is good
+                return True
+            case OptionResponse():
+                # Only if the response is one of the options
+                return user_input in self.last_response.choices
+        return True
 
 
-def play(game_state: GameState, user_input: str):
-    # Get the current scene from the game state
-    response = game_state.current_scene(game_state, game_state.scene_state, user_input)
+def initialize_game() -> Session:
+    return Session()
 
-    if response == "Scene completed.":
-        game_state.current_scene = SCENES[SCENES.index(game_state.current_scene) + 1]
-        response = game_state.current_scene(game_state, game_state.scene_state, user_input)
-        return response
-    elif response:
-        return response
-    # Handle the case where the scene is not found
-    return "System Error, scene not found"
+
+def play_game(session: Session, user_input: str) -> Response:
+    return session.play(user_input)
