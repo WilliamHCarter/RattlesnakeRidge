@@ -1,4 +1,4 @@
-from server.scenes import Scene_t, UserInput_t, test_scene, test_scene_two, first_day_scene, GameData
+from server.scenes import *
 from server.response import Response, LastMessage, MessageResponse, OptionResponse
 from server.agents.conversation import LLM_t, PlayerAgent, Agent
 import yaml
@@ -6,9 +6,11 @@ import yaml
 
 class Session:
     scene_stack: list[Scene_t] = [
-        # test_scene,
-        # test_scene_two,
-        first_day_scene
+        first_day_scene,
+        first_night_scene,
+        second_day_morning_scene,
+        second_day_afternoon_scene,
+        final_confrontation_scene
     ]
     last_response = None
 
