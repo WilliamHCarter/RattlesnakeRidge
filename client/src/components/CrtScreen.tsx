@@ -1,14 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import AsciiBanner from "./AsciiBanner";
+import Typewriter from "./Typewriter";
 import "../index.css";
+
 function CrtScreen({ conversation }: { conversation: string[] }) {
   //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
+  const handleTyping = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [conversation]);
+  };
 
   return (
     <div className="z-10 overflow-hidden flex justify-center self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative">
@@ -41,11 +43,10 @@ function CrtScreen({ conversation }: { conversation: string[] }) {
         ref={scrollRef}
       >
         <AsciiBanner />
-        {conversation.map((message, index) => (
-          <pre key={index} className="whitespace-pre-wrap">
-            {message}
-          </pre>
-        ))}
+        <Typewriter
+          conversation={conversation}
+          onMessageUpdate={handleTyping}
+        />
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const SettingsCard: FC<SettingsCardProps> = ({ onClose }) => {
   return (
     <>
       <div className="fixed inset-0 bg-white dark:bg-transparent bg-opacity-50 flex justify-center items-center backdrop-blur-sm z-10" />
-      <div className="fixed inset-0 flex justify-center items-center z-20">
+      <div className="fixed inset-0 flex justify-center px-4 items-center z-20">
         <div className="bg-white dark:bg-dbg rounded-lg p-4 shadow-lg w-full max-w-lg">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold">Settings</h1>

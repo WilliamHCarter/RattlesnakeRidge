@@ -35,12 +35,11 @@ function ResponseHandler() {
     if (response.ok) {
       const data = await response.json();
       let message = data.response?.message ?? "";
-      let messages = data.response?.messages ?? [];
-      let options = data.response?.options ?? [];
-      let system = data.response?.system ? "\n> " + data.response.system : null;
+      let options = (data.response?.options ?? []).map((option: any[]) => option.join(': '));
 
       console.log(data);
-      setConversation((prev) => [...prev, "\nUser: "+userInput+"\n", message, ...options, ...messages, system]);
+      setConversation((prev) => [...prev, "\nUser: "+userInput+"\n", message, ...options]);
+      //TODO: add expects-response filter
     } else {
       console.error("Failed to send the message");
     }
