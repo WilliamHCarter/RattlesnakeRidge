@@ -210,8 +210,5 @@ make their escape, leaving you with the weight of your misjudgment.""",)
 
     yield MessageDelay("\n", delay_ms=3000)
     yield MessageDelay("Thank you for playing Rattlesnake Ridge!")
-    yield MessageDelay("Made with pride by Will Carter and Aidan McHugh")
-    yield MessageDelay("Star our project on github")
-    yield MessageDelay("hmu on linkedin ;)")
-    yield LastMessage("And, scene.")
+    yield LastMessage("Made with pride by Will Carter and Aidan McHugh")
 
