@@ -66,6 +66,10 @@ class Conversation:
         tmp = self.conversations.pop(0)
         self.conversations.append(tmp)
 
+    def begin_conversation(self) -> list[ConversationResponse]:
+        """Starts a conversation without player input"""
+        return self.converse("[Conversation begins]")
+
     # Loops through each member of the conversation and allows them to speak.
     def converse(self, message: str) -> list[ConversationResponse]:
         responses: list[ConversationResponse] = []

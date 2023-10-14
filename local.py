@@ -4,6 +4,10 @@ from server.game import initialize_game, play_game
 from server.response import *
 
 
+# def sleep(delay: float):
+#     pass
+
+
 def text_input() -> str:
     return input("You:  ")
 
@@ -25,6 +29,7 @@ def local_response_implementation(scene_response) -> None | str:
         case LastMessage():
             print_rich(scene_response)
             sleep(1)
+            print("\n\n", end='')
             return None
         case MessageResponse():
             print_rich(scene_response)

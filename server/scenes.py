@@ -32,6 +32,27 @@ def make_conversation(
     return Conversation(order, llm_data)
 
 
+def have_conversation(conversation: Conversation, max_player_messages: int):
+    responses_left = max_player_messages
+
+    responses = conversation.begin_conversation()
+
+    while responses_left > 0:
+        # Display all the responses
+        for i, r in enumerate(responses):
+            if r.conversation_ends: responses_left = 0
+            msg = f"{r.agent}: {r.text}"
+            if i < len(responses) - 1 or responses_left == 0:
+                yield MessageDelay(msg)
+            else:
+                # If this is the last response and the player has allowed messages,
+                # get input and get new responses
+                message = yield MessageResponse(msg)
+                responses = conversation.converse(message)
+
+        responses_left -= 1
+
+
 # Dummy method, improve later.
 agent_responses = [
     "Hello there!",
@@ -149,21 +170,128 @@ def first_day_scene(game_data: GameData) -> SceneReturn_t:
         
         # Have the conversation
         conversation = make_conversation(game_data, [selected_actor, game_data.player])
-
-        responses_left = 6
-        message = "[Enters the room]"
-        while responses_left > 0:
-            responses = conversation.converse(message)
-            for i, r in enumerate(responses):
-                if r.conversation_ends: responses_left = 0
-                msg = f"{r.agent}: {r.text}"
-                if i < len(responses) - 1 or responses_left == 0:
-                    yield MessageDelay(msg)
-                else:
-                    message = yield MessageResponse(msg)
-            responses_left -= 1
+        yield from have_conversation(conversation, 6) 
         
         if len(remaining_actors) > 0:
             yield MessageDelay("It's getting late in the day, and you have more people to meet...\n")
 
     yield LastMessage("\nYou've had a long and arduous journey; time to go to bed for the night.")
+
+
+def first_night_scene(game_data: GameData) -> SceneReturn_t:
+    yield MessageDelay("The moon is high when a piercing scream echoes through the night. Everyone rushes out to find Whistle's Saloon in disarray -- a scuffle has occurred. You notice a bloodied poker card on the floor, the ace of spades. This might be a clue, but to what?", delay_ms=6000)
+    yield LastMessage("You attempt to rest some more, but are too nervous to get any real sleep. You lay in your cot until sunrise.")
+
+
+def second_day_morning_scene(game_data: GameData) -> SceneReturn_t:
+    intro = "Sunlight reveals tense faces. The townfolk have formed two groups. On one side, by the water trough, stands Whistle, looking ruffled,  and Miss Clara, her comforting hand on his arm. They seem to be arguing with the other group, consisting of Marshal Flint and Billy, who are on the steps of the Marshal's Office. You need to make a choice quickly: which duo will you approach to get their side of the story?'\n"
+    yield MessageDelay(intro, delay_ms=6000)
+
+    # Choose between Billy and Clara vs Flint and Whistle
+    options = [
+        ("1", "Billy and Clara"),
+        ("2", "Flint and Whistle")
+    ]
+    choice = yield OptionResponse("Who would you like to talk to?", options=options)
+
+    # Get the list of participants in this conversation
+    names = ['Billy "Snake Eyes" Thompson', "Miss Clara"] if choice == "1" else ["Marshal Flint", "Whistle"]
+    actors: list[Agent] = [
+        agent
+        for agent in game_data.actors
+        if agent.name in names
+    ]
+    # Add the player
+    actors += [game_data.player]
+
+    # Have a conversation
+    conversation = make_conversation(game_data, actors)
+    yield from have_conversation(conversation, 12) 
+
+    yield LastMessage(
+        """\nA sudden gunshot rings out, interrupting your conversation. The \
+townsfolk scatter, heading to their homes or businesses to seek cover."""
+    )
+
+
+def second_day_afternoon_scene(game_data: GameData) -> SceneReturn_t:
+    yield MessageDelay("The town is quieter now and the townspeople's nerves are on edge. You have the chance to speak to one more person in-depth.")
+
+    options = [(str(i+1), actor.name) for (i, actor) in enumerate(game_data.actors)]
+    choice = yield OptionResponse("Who would you like to speak with?",
+                         options=options)
+    index = int(choice) - 1
+    selected = game_data.actors[index]
+
+    yield MessageDelay(f"\nYou approach {selected.name} for a final conversation.\n")
+
+    yield from have_conversation(make_conversation(game_data, [selected, game_data.player]), 6)
+
+    yield LastMessage("Night has fallen. The townsfolk demand an answer. You send out word for all the suspects to gather in the Saloon.")
+
+
+def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
+    yield MessageDelay("The mood is palpable as you enter the Saloon. Shadows dance on the walls as you stand before the suspects. Here, you must make your case to the townfolk, after which you must aim your gun and pulling the trigger on the character you believe to be the killer.")
+
+    conv = copy(game_data.actors) + [game_data.player]
+    conversation = make_conversation(game_data, conv)
+
+    responses_left = 12
+    responses = conversation.begin_conversation()
+
+    while responses_left > 0:
+        # Display all the responses
+        for r in responses:
+            # Not allowed here.
+            # Todo:: for the final confrontation, we should not let the agents make the
+            # conversation end early. Instead, they should be allowed to 'exit' the
+            # conversation by refusing to say anything more.
+            # if r.conversation_ends: responses_left = 0
+
+            msg = f"{r.agent}: {r.text}"
+            yield MessageDelay(msg)
+        
+        if responses_left > 1:
+            message = yield MessageResponse(f"\nYou have {responses_left} statements left.")
+            responses = conversation.converse(message)
+            # Adds an empty line
+            yield MessageDelay("", delay_ms=0)
+
+        responses_left -= 1
+
+    # Time for the final decision
+    yield MessageDelay("\n\nThe time has come to make a final decision\n")
+    yield MessageDelay("Who do you kill.\n", character_delay_ms=90, do_type_message=True)
+
+    options = [(str(i+1), actor.name) for (i, actor) in enumerate(game_data.actors)]
+    choice = yield OptionResponse("Pick.", options=options)
+    index = int(choice) - 1
+    selected = game_data.actors[index]
+
+    if selected.name == "Whistle":
+        yield MessageDelay("\n\nYou aim your gun at Whistle, and pull the trigger.")
+        yield SoundDelay("bang.mp3", delay_ms=1000)
+        yield MessageDelay("The bullet flies through the air, and hits Whistle square in the chest." )
+        yield MessageDelay("Whistle falls to the ground, dead. The townsfolk cheer; you are hailed as a hero. The ghost of Jeb can rest easy.")
+    else:
+        yield MessageDelay("\n\nYou pull the trigger", do_type_message=False, delay_ms=300)
+
+        last_words = conversation.speak_directly(
+            "You've been shot by the player, speak your dying words given your played experience",
+            selected,
+        )[0].text
+
+        yield MessageDelay(f"{selected.name}: {last_words}")
+
+        yield MessageDelay(f"""\nAs {selected.name} crumples to the ground, chaos ensues. \
+The real killer takes advantage of the confusion, locking you up \
+in the Marshal's Office with accusations of murder, while they \
+make their escape, leaving you with the weight of your misjudgment.""",)
+
+    yield MessageDelay("\n", delay_ms=3000)
+    yield MessageDelay("Thank you for playing Rattlesnake Ridge!")
+    yield MessageDelay("Made with pride by Will Carter and Aidan McHugh")
+    yield MessageDelay("Star our project on github")
+    yield MessageDelay("hmu on linkedin ;)")
+    yield LastMessage("And, scene.")
+
