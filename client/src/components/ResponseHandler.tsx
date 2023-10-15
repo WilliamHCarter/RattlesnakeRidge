@@ -5,7 +5,7 @@ import CrtScreen from "./CrtScreen";
 function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]); // Explicitly declare the type as string[]
   const [gameID, setGameID] = useState<string>("");
-  var loaded = false;
+  const [loaded, setLoaded] = useState(false);
 
   // Fetch the initial message from the server when the component mounts.
   useEffect(() => {
@@ -15,7 +15,7 @@ function ResponseHandler() {
         const data = await response.json();
         console.log(data);
         setConversation((prev) => [...prev, data.message]);
-        loaded = true;
+        setLoaded(true);
         setGameID(() => data.game_id);
       } else {
       }
@@ -24,24 +24,42 @@ function ResponseHandler() {
     fetchData();
   }, []);
 
-  // Send `userInput` to the server, receive response, then add to `conversation`.
-  const handleUserInput = async (userInput: string) => {
+  useEffect(() => {
+    if (gameID) {
+      handleUserInput("");
+    }
+  }, [gameID]);
+
+  const sendRequest = async (userInput: string) => {
     const response = await fetch("http://127.0.0.1:5000/play/" + gameID, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ input: userInput }),
     });
-
     if (response.ok) {
       const data = await response.json();
-      let message = data.response?.message ?? "";
-      let options = (data.response?.options ?? []).map((option: any[]) => option.join(': '));
-
       console.log(data);
-      setConversation((prev) => [...prev, "\nUser: "+userInput+"\n", message, ...options]);
-      //TODO: add expects-response filter
+      return data;
+    }
+    return Error("Error: Server Request Failed.");
+  };
+
+  // Send `userInput` to the server, receive response, then add to `conversation`.
+  const handleUserInput = async (userInput: string) => {
+    if (userInput != "") {
+      setConversation((prev) => [...prev, "\nUser: " + userInput + "\n"]);
+    }
+    let data = await sendRequest(userInput);
+    let message = data.response?.message ?? "";
+    let options = (data.response?.options ?? []).map((option: any[]) =>
+      option.join(": ")
+    );
+
+    if (data.response.expects_user_input == true) {
+      setConversation((prev) => [...prev, message, ...options]);
     } else {
-      console.error("Failed to send the message");
+      handleUserInput("");
+      setConversation((prev) => [...prev, message, ...options]);
     }
   };
 

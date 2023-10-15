@@ -18,7 +18,7 @@ const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate }
           setCurrentMessage(newMessage);
           onMessageUpdate(newMessage);  
           setCharIndex((prev) => prev + 1);
-        }, 50); // Adjust speed here
+        }, 25); // Adjust speed here
 
         return () => clearTimeout(timeoutId);
       } else {
