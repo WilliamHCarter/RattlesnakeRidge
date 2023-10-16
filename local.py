@@ -3,9 +3,20 @@ from time import sleep
 from server.game import initialize_game, play_game
 from server.response import *
 
+import logging
 
-# def sleep(delay: float):
-#     pass
+logger = logging.getLogger()
+logger.setLevel(logging.WARNING)
+
+# Create a console logger
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(ch)
+
+
+def sleep(delay: float):
+    pass
 
 
 def text_input() -> str:

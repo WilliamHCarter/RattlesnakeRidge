@@ -6,3 +6,4 @@ venv/
 *.ipynb
 .vscode/
 *flask_session/
+server.log
