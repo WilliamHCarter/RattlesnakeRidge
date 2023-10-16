@@ -12,6 +12,7 @@ export enum RespType {
 export interface BaseCommand {
   type: RespType;
   expects_user_input: boolean;
+  is_game_over: boolean;
 }
 
 export interface GenericMessageCommand extends BaseCommand {
@@ -44,11 +45,11 @@ export function castCommand(Command: any): BaseCommand {
       return Command as MessageDelayCommand;
     case "SoundDelayCommand":
       return Command as SoundDelayCommand;
-    case "LastMessage":
+    case "SceneEndCommand":
       Command.type= "MessageCommand";
       return Command as MessageCommand;
     default:
-      throw new Error("Unsupported Command type");
+      throw new Error("Unsupported Command type: "+Command.type);
   }
 }
 

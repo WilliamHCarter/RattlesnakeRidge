@@ -16,7 +16,8 @@ function InputHandler() {
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
-  
+  const [gameOver, setGameOver] = useState<boolean>(false);
+
   // Fetch the initial message from the server when the component mounts.
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +45,6 @@ function InputHandler() {
     }
   }, [gameID]);
 
-
   const sendRequest = async (userInput: string) => {
     const response = await fetch("http://127.0.0.1:5000/play/" + gameID, {
       method: "POST",
@@ -60,6 +60,7 @@ function InputHandler() {
   };
 
   const handleUserInput = async (userInput: string) => {
+    if (gameOver) return;
     if (lastMessage?.type == "SelectOptionCommand" && userInput !== "") {
       let last: SelectOptionCommand = lastMessage as SelectOptionCommand;
       if (!last.options.some((tuple) => tuple.includes(userInput))) {
@@ -73,8 +74,9 @@ function InputHandler() {
     let response = castCommand(data.response);
     let styles: TextStyles = extractTextStyles(response);
     let text: string[] = extractTextContent(response);
-
-    console.log("resp", response);
+    if (response.is_game_over) {
+      setGameOver(true);
+    }
 
     let uText = userInput ? "\nYou: " + userInput : "";
     setConversation((prev) => [...prev, uText, ...text]);
@@ -85,7 +87,7 @@ function InputHandler() {
         ? (response as SelectOptionCommand)
         : undefined
     );
-    if (!response.expects_user_input) handleUserInput("");
+    if (!response.expects_user_input && !response.is_game_over) handleUserInput("");
   };
 
   return (
