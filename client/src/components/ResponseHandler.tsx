@@ -1,21 +1,35 @@
 import { useEffect, useState } from "react";
 import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
+import { TextStyles } from "./Typewriter";
+import {
+  SelectOptionCommand,
+  castCommand,
+  extractTextContent,
+  extractTextStyles,
+} from "../Command";
 
-function ResponseHandler() {
-  const [conversation, setConversation] = useState<string[]>([]); // Explicitly declare the type as string[]
-  const [gameID, setGameID] = useState<string>("");
-  const [loaded, setLoaded] = useState(false);
-
+function InputHandler() {
+  const [conversation, setConversation] = useState<string[]>([]);
+  const [gameID, setGameID] = useState<string | undefined>("");
+  const [_styles, setStyles] = useState<TextStyles>();
+  const [lastMessage, setLastMessage] = useState<
+    SelectOptionCommand | undefined
+  >(undefined);
+  
   // Fetch the initial message from the server when the component mounts.
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch("http://127.0.0.1:5000/start");
-      if (response.ok && !loaded) {
+      if (response.ok) {
         const data = await response.json();
         console.log(data);
-        setConversation((prev) => [...prev, data.message]);
-        setLoaded(true);
+        if (typeof data.message === "string" && data.message !== undefined) {
+          setConversation((prev: string[]) => [
+            ...prev,
+            data.message as string,
+          ]);
+        }
         setGameID(() => data.game_id);
       } else {
       }
@@ -29,6 +43,7 @@ function ResponseHandler() {
       handleUserInput("");
     }
   }, [gameID]);
+
 
   const sendRequest = async (userInput: string) => {
     const response = await fetch("http://127.0.0.1:5000/play/" + gameID, {
@@ -44,23 +59,33 @@ function ResponseHandler() {
     return Error("Error: Server Request Failed.");
   };
 
-  // Send `userInput` to the server, receive response, then add to `conversation`.
   const handleUserInput = async (userInput: string) => {
-    if (userInput != "") {
-      setConversation((prev) => [...prev, "\nUser: " + userInput + "\n"]);
+    if (lastMessage?.type == "SelectOptionCommand" && userInput !== "") {
+      let last: SelectOptionCommand = lastMessage as SelectOptionCommand;
+      if (!last.options.some((tuple) => tuple.includes(userInput))) {
+        let error = "Invalid option. Please try again.";
+        setConversation((prev) => [...prev, error]);
+        return;
+      }
     }
-    let data = await sendRequest(userInput);
-    let message = data.response?.message ?? "";
-    let options = (data.response?.options ?? []).map((option: any[]) =>
-      option.join(": ")
-    );
 
-    if (data.response.expects_user_input == true) {
-      setConversation((prev) => [...prev, message, ...options]);
-    } else {
-      handleUserInput("");
-      setConversation((prev) => [...prev, message, ...options]);
-    }
+    let data = await sendRequest(userInput);
+    let response = castCommand(data.response);
+    let styles: TextStyles = extractTextStyles(response);
+    let text: string[] = extractTextContent(response);
+
+    console.log("resp", response);
+
+    let uText = userInput ? "\nYou: " + userInput : "";
+    setConversation((prev) => [...prev, uText, ...text]);
+
+    setStyles(styles);
+    setLastMessage(
+      response.type == "SelectOptionCommand"
+        ? (response as SelectOptionCommand)
+        : undefined
+    );
+    if (!response.expects_user_input) handleUserInput("");
   };
 
   return (
@@ -71,4 +96,4 @@ function ResponseHandler() {
   );
 }
 
-export default ResponseHandler;
+export default InputHandler;
