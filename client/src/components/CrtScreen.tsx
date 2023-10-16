@@ -1,9 +1,9 @@
 import { useRef } from "react";
 import AsciiBanner from "./AsciiBanner";
-import Typewriter from "./Typewriter";
+import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
 
-function CrtScreen({ conversation }: { conversation: string[] }) {
+function CrtScreen({ conversation }: { conversation: string[] }, style:TextStyles) {
   //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const handleTyping = () => {
@@ -46,6 +46,7 @@ function CrtScreen({ conversation }: { conversation: string[] }) {
         <Typewriter
           conversation={conversation}
           onMessageUpdate={handleTyping}
+          style={style}
         />
       </div>
     </div>
