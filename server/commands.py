@@ -60,7 +60,7 @@ def marshal_command(command: Command) -> dict:
     return data
 
 
-def unmarshal_command(r: dict) -> Command:
+def unmarshal_command(_: dict) -> Command:
     raise NotImplementedError()
 
 
