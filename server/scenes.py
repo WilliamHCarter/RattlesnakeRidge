@@ -210,5 +210,5 @@ make their escape, leaving you with the weight of your misjudgment.""",)
 
     yield MessageDelayCommand("\n", delay_ms=3000)
     yield MessageDelayCommand("Thank you for playing Rattlesnake Ridge!")
-    yield SceneEndCommand("Made with pride by Will Carter and Aidan McHugh")
+    yield SceneEndCommand("Made with pride by Will Carter and Aidan McHugh", is_game_over=True)
 
