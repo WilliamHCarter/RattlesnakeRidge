@@ -1,5 +1,5 @@
 from server.scenes import *
-from server.response import Response, LastMessage, MessageResponse, OptionResponse
+from server.commands import Command, SceneEndCommand, MessageCommand, SelectOptionCommand
 from server.agents.conversation import LLM_t, PlayerAgent, Agent
 import yaml
 import logging
@@ -15,7 +15,7 @@ class Session:
         second_day_afternoon_scene,
         final_confrontation_scene
     ]
-    last_response : Response | None = None
+    last_scene_output : Command | None = None
 
     def __init__(self, llm: LLM_t, prompts, setting, actors):
         self.llm = llm
@@ -48,10 +48,10 @@ class Session:
     def is_gameover(self) -> bool:
         return len(self.scene_stack) == 0 and self.current_scene is None
 
-    def play(self, user_input: str) -> Response:
+    def play(self, user_input: str) -> Command:
         if self.is_gameover():
             logger.warn("User attempted to play a game that has finished")
-            return LastMessage("The game is over.")
+            return SceneEndCommand("The game is over.")
 
         if not self.scene_started:
             if user_input is not None:
@@ -59,32 +59,32 @@ class Session:
             try:
                 resp = next(self.current_scene)
             except Exception as error:
-                logger.error("failed to get the next response from current scene. error: %s", error)
+                logger.error("failed to get the next command from current scene. error: %s", error)
                 raise error
             self.scene_started = True
         else:
             try:
                 resp = self.current_scene.send(user_input)
             except Exception as error:
-                logger.error("failed to get the next response from current scene. error: %s", error)
+                logger.error("failed to get the next command from current scene. error: %s", error)
                 raise error
 
-        if isinstance(resp, LastMessage):
+        if isinstance(resp, SceneEndCommand):
             self.start_next_scene()
 
-        self.last_response = resp
+        self.last_scene_output = resp
         return resp
 
     def is_input_valid(self, user_input: UserInput_t) -> bool:
-        """Check that the user input is valid given the last response sent."""
-        if self.last_response is None: return True
-        match self.last_response:
-            case MessageResponse():
+        """Check that the user input is valid given the last command sent."""
+        if self.last_scene_output is None: return True
+        match self.last_scene_output:
+            case MessageCommand():
                 # Any message is good
                 return True
-            case OptionResponse():
-                # Only if the response is one of the options
-                return user_input in self.last_response.choices
+            case SelectOptionCommand():
+                # Only if the user response is one of the choices
+                return user_input in self.last_scene_output.choices
         return True
 
 
@@ -131,5 +131,5 @@ def initialize_game(llm: LLM_t = None) -> Session:
     )
 
 
-def play_game(session: Session, user_input: str) -> Response:
+def play_game(session: Session, user_input: str) -> Command:
     return session.play(user_input)
