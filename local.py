@@ -32,7 +32,7 @@ def print_rich(command: Command):
             sleep(delay)
         print()
     else:
-        print(r.message)
+        print(command.message)
 
 
 def local_implementation(incoming_command) -> None | str:
