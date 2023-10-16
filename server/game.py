@@ -93,22 +93,6 @@ def load_dict(filename: str) -> dict:
 
 
 def initialize_game(llm: LLM_t = None) -> Session:
-    # If we didn't give an llm, use the fake list chat model for now.
-    # In the future, we'll require an LLM to be provided here, but I
-    # don't want to break anything right now
-    # todo:: update.
-    if llm is None:
-        from langchain.chat_models import FakeListChatModel
-        llm = FakeListChatModel(
-            verbose=True,
-            responses=[
-                    "Hi there, I'm talking to you.",
-                    "This is a response",
-                    "I say something else too!",
-                    "Ok, goodbye now!",
-                ],
-            )
-
     data_dir = "server/data/"
 
     prompts = load_dict(data_dir + "prompts.yaml")
