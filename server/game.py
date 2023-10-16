@@ -1,3 +1,4 @@
+from server import logger
 from server.scenes import *
 from server.response import Response, LastMessage, MessageResponse, OptionResponse
 from server.agents.conversation import LLM_t, PlayerAgent, Agent
@@ -12,7 +13,7 @@ class Session:
         second_day_afternoon_scene,
         final_confrontation_scene
     ]
-    last_response = None
+    last_response : Response | None = None
 
     def __init__(self, llm: LLM_t, prompts, setting, actors):
         self.llm = llm
@@ -47,15 +48,24 @@ class Session:
 
     def play(self, user_input: str) -> Response:
         if self.is_gameover():
+            logger.warn("User attempted to play a game that has finished")
             return LastMessage("The game is over.")
 
         if not self.scene_started:
             if user_input is not None:
-                print(f'[WARN] Got user input "{user_input}" at the beginning of a scene. This is unexpected.')
-            resp = next(self.current_scene)
+                logger.warn("got user input \"%s\" at the beginning of a scene. Expected `None` input.", user_input)
+            try:
+                resp = next(self.current_scene)
+            except Exception as error:
+                logger.error("failed to get the next response from current scene. error: %s", error)
+                raise error
             self.scene_started = True
         else:
-            resp = self.current_scene.send(user_input)
+            try:
+                resp = self.current_scene.send(user_input)
+            except Exception as error:
+                logger.error("failed to get the next response from current scene. error: %s", error)
+                raise error
 
         if isinstance(resp, LastMessage):
             self.start_next_scene()
@@ -110,6 +120,7 @@ def initialize_game(llm: LLM_t = None) -> Session:
         Agent(datafile=data_dir + f"characters/{name}.yaml") for name in character_names
     ]
 
+    logger.info("Initialized a new game")
     return Session(
         llm=llm,
         prompts=prompts,
