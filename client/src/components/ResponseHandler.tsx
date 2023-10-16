@@ -18,32 +18,26 @@ function InputHandler() {
   >(undefined);
   const [gameOver, setGameOver] = useState<boolean>(false);
 
-  // Fetch the initial message from the server when the component mounts.
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("http://127.0.0.1:5000/start");
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data);
-        if (typeof data.message === "string" && data.message !== undefined) {
-          setConversation((prev: string[]) => [
-            ...prev,
-            data.message as string,
-          ]);
-        }
-        setGameID(() => data.game_id);
-      } else {
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (gameID) {
-      handleUserInput("");
+ useEffect(() => {
+  let isMounted = true;
+  const fetchData = async () => {
+    const response = await fetch("http://127.0.0.1:5000/start");
+    if (!response.ok || !isMounted) {
+      return;
     }
-  }, [gameID]);
+
+    const data = await response.json();
+    if (data.message && typeof data.message === "string") {
+      setConversation((prev) => [...prev, data.message]);
+      setGameID(data.game_id);
+    }
+  };
+  fetchData();
+
+  return () => {
+    isMounted = false; 
+  };
+}, []);
 
   const sendRequest = async (userInput: string) => {
     const response = await fetch("http://127.0.0.1:5000/play/" + gameID, {
