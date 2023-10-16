@@ -1,8 +1,13 @@
 import uuid
 from flask import Flask, request, jsonify
 from server.game import play_game, initialize_game  
-from server import game_states, app
-from server.response import marshal_response
+from server import game_states, app, logger
+from server.commands import marshal_command
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @app.route('/start', methods=['GET'])
 def start_game():
@@ -12,6 +17,7 @@ def start_game():
     # Initializing the game state
     game_states[game_id] = initialize_game()
 
+    logger.info("Created a new game with id %s", game_id)
     return jsonify(game_id=game_id, message="Game started!")
 
 @app.route('/play/<game_id>', methods=['POST'])
@@ -20,16 +26,19 @@ def play(game_id):
     game_state = game_states.get(game_id)
     
     if game_state is None:
+        logger.warn("`/play` called with an invalid game id %s", game_id)
         return jsonify(error="Invalid game ID"), 400
 
     if not game_state.is_input_valid(user_input):
+        logger.warn("invalid user input provided \"%s\" for game id %s", user_input, game_id)
         return jsonify(error="Bad user input"), 400
     
-    response = play_game(game_state, user_input)
-    return jsonify(response=marshal_response(response))
+    command = play_game(game_state, user_input)
+    return jsonify(response=marshal_command(command))
 
 @app.route('/end/<game_id>', methods=['POST'])
 def end_game(game_id):
+    logger.info("Game with id %s ended", game_id)
     if game_id in game_states:
         del game_states[game_id]
         return jsonify(message="Game data cleared!")
