@@ -15,15 +15,17 @@ In Rattlesnake Ridge, the player faces off against 4 AI Agents (Powered by the O
 
 To get started with this project, follow these steps:
 
-1. Clone the repository:
+### 1. Clone the repository:
 
    ```bash
    git clone https://github.com/WilliamHCarter/RattlesnakeRidge.git
    cd RattlesnakeRidge
    ```
 
-2. Install dependencies:
+### 2. Install dependencies:
 
+  **Python**
+   
    Make sure you have Python installed. If not, you can download and install Python from [python.org](https://www.python.org/downloads/).
 
    It's recommended to use a virtual environment to keep your project dependencies isolated:
@@ -40,24 +42,20 @@ To get started with this project, follow these steps:
    source venv/bin/activate
    ```
 
-   Once the virtual environment is activated, you can install the dependencies using:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-   Docker
+   **Docker**
+   
    This project is containerized using Docker. Make sure you have Docker installed. If not, you can download and install Docker from [Docker's official website.](https://www.docker.com/)
 
-   Node & NPM
+   **Node & NPM**
+   
    This project uses NPM for its frontend dependency installation. Make sure you have node installed. If not, you can download and install Node.js from [nodejs.org](https://nodejs.org/). npm is included with the Node.js installation.
 
-3. Add API Key:
+### 3. Add API Key:
 
    Create a file named `.env`, and paste the contents of `.env.template` into it.
    Then, add your key to the `LLM_API_KEY` variable inside your new `.env` file.
 
-4. Run Flask App:
+### 4. Run Flask App:
 
    Build the Docker image and run it as a container:
 
@@ -72,10 +70,11 @@ To get started with this project, follow these steps:
 
    The Flask app will be accessible at [http://localhost:5000](http://localhost:5000/).
 
-5. Run Frontend
+### 5. Run Frontend
 
-   Navigate to the `client` directory and run the commans:
-   ```npm install
+   Navigate to the `client` directory and run the commands:
+   ```
+   npm install
    npm run dev
    ```
    This will open up a new UI instance at [http://localhost:5173](http://localhost:5173/) which you can use to interact with the app.
