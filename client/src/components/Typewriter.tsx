@@ -1,11 +1,28 @@
 import React, { useEffect, useState } from 'react';
 
+export class TextStyles {
+  message: string;
+  doTypeMessage: boolean;
+  characterDelayMs: number;
+
+  constructor(
+      message: string = "",
+      doTypeMessage: boolean = true,
+      characterDelayMs: number = 0,
+  ) {
+      this.message = message;
+      this.doTypeMessage = doTypeMessage;
+      this.characterDelayMs = characterDelayMs;
+  }
+}
+
 type TypewriterProps = {
   conversation: string[];
-  onMessageUpdate: (message: string) => void;  // New prop to handle currentMessage updates
+  onMessageUpdate: (message: string) => void;
+  style: TextStyles;
 };
 
-const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate }) => {
+const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate, style }) => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [messageIndex, setMessageIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
@@ -18,7 +35,7 @@ const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate }
           setCurrentMessage(newMessage);
           onMessageUpdate(newMessage);  
           setCharIndex((prev) => prev + 1);
-        }, 50); // Adjust speed here
+        }, style.characterDelayMs); 
 
         return () => clearTimeout(timeoutId);
       } else {

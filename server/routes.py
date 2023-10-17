@@ -4,6 +4,11 @@ from server.game import play_game, initialize_game
 from server import game_states, app, logger
 from server.commands import marshal_command
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 @app.route('/start', methods=['GET'])
 def start_game():
     # Generating a unique game ID

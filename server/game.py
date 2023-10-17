@@ -1,8 +1,10 @@
-from server import logger
 from server.scenes import *
 from server.commands import Command, SceneEndCommand, MessageCommand, SelectOptionCommand
 from server.agents.conversation import LLM_t, PlayerAgent, Agent
 import yaml
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Session:
