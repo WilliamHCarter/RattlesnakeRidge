@@ -40,14 +40,12 @@ class SelectOptionCommand(GenericMessageCommand):
 @dataclass(frozen=True)
 class MessageDelayCommand(GenericMessageCommand):
     delay_ms: int = 1000
-    expects_user_input = False
 
 # For the gunshot
 @dataclass(frozen=True)
 class SoundDelayCommand(Command):
     sound_name: str
     delay_ms: int
-    expects_user_input = False
 
 Commands = SoundDelayCommand | MessageDelayCommand | SelectOptionCommand | MessageCommand | SceneEndCommand
 
