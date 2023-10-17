@@ -65,7 +65,18 @@ def local_implementation(incoming_command) -> None | str:
 
 
 if __name__ == "__main__":
-    game = initialize_game()
+    from langchain.chat_models import FakeListChatModel
+    llm = FakeListChatModel(
+        verbose=True,
+        responses=[
+            "Hi there, I'm talking to you.",
+            "This is a response",
+            "I say something else too!",
+            "Ok, goodbye now!",
+        ],
+    )
+
+    game = initialize_game(llm=llm)
     user_response = None
     while not game.is_gameover():
         response = play_game(game, user_response)

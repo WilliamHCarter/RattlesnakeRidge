@@ -13,9 +13,22 @@ logger = logging.getLogger(__name__)
 def start_game():
     # Generating a unique game ID
     game_id = str(uuid.uuid4())
+        
+    # Create the llm to use for this game
+    # todo:: get the user's provided API key ;)
+    from langchain.chat_models import FakeListChatModel
+    llm = FakeListChatModel(
+        verbose=True,
+        responses=[
+            "Hi there, I'm talking to you.",
+            "This is a response",
+            "I say something else too!",
+            "Ok, goodbye now!",
+        ],
+    )
     
     # Initializing the game state
-    game_states[game_id] = initialize_game()
+    game_states[game_id] = initialize_game(llm=llm)
 
     logger.info("Created a new game with id %s", game_id)
     return jsonify(game_id=game_id, message="Game started!")
