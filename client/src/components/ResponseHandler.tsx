@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
-import {
-  SelectOptionCommand,
-  castCommand,
-  extractTextContent,
-  extractTextStyles,
-} from "../Command";
+import { SelectOptionCommand } from "../Command";
+import { startGame, playGame } from "../API";
 
-function InputHandler() {
+function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]);
-  const [gameID, setGameID] = useState<string | undefined>("");
+  const [gameID, setGameID] = useState<string>("");
   const [styles, setStyles] = useState<TextStyles>(new TextStyles());
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
@@ -26,28 +22,17 @@ function InputHandler() {
 
   const restart = async () => {
     setRestartGame(true);
-    setConversation([]); 
-    setGameOver(false);   
+    setConversation([]);
+    setGameOver(false);
   };
-  
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      const response = await fetch("http://127.0.0.1:5000/start");
-      if (!response.ok || !isMounted) {
-        return;
-      }
 
-      const data = await response.json();
-      if (data.message && typeof data.message === "string") {
-        setConversation((prev) => [...prev, data.message]);
-        setGameID(data.game_id);
-      }
-    };
-    fetchData();
+  useEffect(() => {
+    let mounted = true;
+    const isMounted = () => mounted;
+    startGame({ setConversation, setGameID, setStyles, isMounted });
 
     return () => {
-      isMounted = false;
+      mounted = false;
       setRestartGame(false);
     };
   }, [restartGame]);
@@ -58,49 +43,32 @@ function InputHandler() {
     }
   }, [gameID]);
 
-  const sendRequest = async (userInput: string) => {
-    const response = await fetch("http://127.0.0.1:5000/play/" + gameID, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input: userInput }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log(data);
-      return data;
-    }
-    return Error("Error: Server Request Failed.");
-  };
-
-  const handleUserInput = async (userInput: string) => {
-    if (gameOver) return;
+  const validateOption = (lastMessage: any, userInput: string): boolean => {
     if (lastMessage?.type == "SelectOptionCommand" && userInput !== "") {
       let last: SelectOptionCommand = lastMessage as SelectOptionCommand;
       if (!last.options.some((tuple) => tuple.includes(userInput))) {
         let error = "Invalid option. Please try again.";
         setConversation((prev) => [...prev, error]);
-        return;
+        return true;
       }
     }
+    return false;
+  };
 
-    let data = await sendRequest(userInput);
-    let response = castCommand(data.response);
-    let styles: TextStyles = extractTextStyles(response);
-    let text: string[] = extractTextContent(response);
-    if (response.is_game_over) {
-      setGameOver(true);
+  const handleUserInput = async (userInput: string) => {
+    if (gameOver) return;
+    if (validateOption(lastMessage, userInput)) return;
+
+    let data = await playGame(gameID, userInput, gameOver, setConversation);
+    if (data?.styles) {
+      setStyles(data?.styles);
     }
-
-    let uText = userInput ? "\nYou: " + userInput : "";
-    setConversation((prev) => [...prev, uText, ...text]);
-
-    setStyles(styles);
     setLastMessage(
-      response.type == "SelectOptionCommand"
-        ? (response as SelectOptionCommand)
+      data?.command.type == "SelectOptionCommand"
+        ? (data.command as SelectOptionCommand)
         : undefined
     );
-    if (!response.expects_user_input && !response.is_game_over)
+    if (!data?.command.expects_user_input && !data?.command.is_game_over)
       handleUserInput("");
   };
 
@@ -121,4 +89,4 @@ function InputHandler() {
   );
 }
 
-export default InputHandler;
+export default ResponseHandler;
