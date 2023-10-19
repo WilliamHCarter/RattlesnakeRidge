@@ -3,7 +3,10 @@ import AsciiBanner from "./AsciiBanner";
 import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
 
-function CrtScreen({ conversation }: { conversation: string[] }, style:TextStyles) {
+function CrtScreen(
+  { conversation }: { conversation: string[] },
+  style: TextStyles
+) {
   //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const handleTyping = () => {
@@ -39,15 +42,16 @@ function CrtScreen({ conversation }: { conversation: string[] }, style:TextStyle
         }}
       ></div>
       <div
-        className=" text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto"
+        className=" text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto overflow-x-hidden"
         ref={scrollRef}
       >
-        <AsciiBanner />
-        <Typewriter
-          conversation={conversation}
-          onMessageUpdate={handleTyping}
-          style={style}
-        />
+        <AsciiBanner>
+          <Typewriter
+            conversation={conversation}
+            onMessageUpdate={handleTyping}
+            style={style}
+          />
+        </AsciiBanner>
       </div>
     </div>
   );
