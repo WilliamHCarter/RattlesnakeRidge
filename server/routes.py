@@ -39,11 +39,11 @@ def play(game_id):
     game_state = game_states.get(game_id)
     
     if game_state is None:
-        logger.warn("`/play` called with an invalid game id %s", game_id)
+        logger.warning("`/play` called with an invalid game id %s", game_id)
         return jsonify(error="Invalid game ID"), 400
 
     if not game_state.is_input_valid(user_input):
-        logger.warn("invalid user input provided \"%s\" for game id %s", user_input, game_id)
+        logger.warning("invalid user input provided \"%s\" for game id %s", user_input, game_id)
         return jsonify(error="Bad user input"), 400
     
     command = play_game(game_state, user_input)

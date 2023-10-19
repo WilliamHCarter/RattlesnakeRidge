@@ -7,3 +7,4 @@ venv/
 .vscode/
 *flask_session/
 server.log
+.pytest_cache/
