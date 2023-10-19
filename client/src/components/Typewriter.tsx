@@ -20,15 +20,18 @@ type TypewriterProps = {
   conversation: string[];
   onMessageUpdate: (message: string) => void;
   style: TextStyles;
+  onTypeState: (typing: boolean) => void;
 };
 
-const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate, style }) => {
+const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate, style, onTypeState}) => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [messageIndex, setMessageIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
 
   useEffect(() => {
     if (messageIndex < conversation.length) {
+      onTypeState(true); // Typing starts
+
       if (charIndex < conversation[messageIndex].length) {
         const timeoutId = setTimeout(() => {
           const newMessage = currentMessage + conversation[messageIndex][charIndex];
@@ -43,8 +46,10 @@ const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate, 
         setMessageIndex((prev) => prev + 1);
         setCharIndex(0);
       }
+    } else {
+      onTypeState(false); // Typing ends
     }
-  }, [messageIndex, charIndex, conversation, currentMessage, onMessageUpdate]);  
+  }, [messageIndex, charIndex, conversation, currentMessage, onMessageUpdate, onTypeState, style.characterDelayMs]);  
 
   return (
     <div>
