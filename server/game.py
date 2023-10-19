@@ -24,6 +24,8 @@ class Session:
         self.setting = setting
         self.actors = actors
 
+        self.gameover = False
+
         self.start_next_scene()
 
     @property
@@ -46,7 +48,7 @@ class Session:
         self.scene_started = False
 
     def is_gameover(self) -> bool:
-        return len(self.scene_stack) == 0 and self.current_scene is None
+        return self.gameover
 
     def play(self, user_input: str) -> Command:
         if self.is_gameover():
@@ -60,6 +62,7 @@ class Session:
                 resp = next(self.current_scene)
             except Exception as error:
                 logger.error("failed to get the next command from current scene. error: %s", error)
+                self.gameover = True
                 raise error
             self.scene_started = True
         else:
@@ -67,10 +70,15 @@ class Session:
                 resp = self.current_scene.send(user_input)
             except Exception as error:
                 logger.error("failed to get the next command from current scene. error: %s", error)
+                self.gameover = True
                 raise error
 
         if isinstance(resp, SceneEndCommand):
             self.start_next_scene()
+
+        if resp.is_game_over: 
+            logger.info("game has ended")
+            self.gameover = True
 
         self.last_scene_output = resp
         return resp
@@ -95,22 +103,6 @@ def load_dict(filename: str) -> dict:
 
 
 def initialize_game(llm: LLM_t = None) -> Session:
-    # If we didn't give an llm, use the fake list chat model for now.
-    # In the future, we'll require an LLM to be provided here, but I
-    # don't want to break anything right now
-    # todo:: update.
-    if llm is None:
-        from langchain.chat_models import FakeListChatModel
-        llm = FakeListChatModel(
-            verbose=True,
-            responses=[
-                    "Hi there, I'm talking to you.",
-                    "This is a response",
-                    "I say something else too!",
-                    "Ok, goodbye now!",
-                ],
-            )
-
     data_dir = "server/data/"
 
     prompts = load_dict(data_dir + "prompts.yaml")

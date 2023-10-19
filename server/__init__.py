@@ -24,7 +24,6 @@ else:
 
 CORS(app, origins=[origins])
 
-
 Session(app)
 
 from server import routes
