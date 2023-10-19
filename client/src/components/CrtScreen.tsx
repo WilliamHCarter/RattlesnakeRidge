@@ -3,10 +3,13 @@ import AsciiBanner from "./AsciiBanner";
 import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
 
-function CrtScreen(
-  { conversation }: { conversation: string[] },
-  style: TextStyles
-) {
+type CrtScreenProps = {
+  conversation: string[];
+  style: TextStyles;
+  onTypeState: (typing: boolean) => void;
+};
+
+function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
   //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const handleTyping = () => {
@@ -50,6 +53,7 @@ function CrtScreen(
             conversation={conversation}
             onMessageUpdate={handleTyping}
             style={style}
+            onTypeState={onTypeState}
           />
         </AsciiBanner>
       </div>
