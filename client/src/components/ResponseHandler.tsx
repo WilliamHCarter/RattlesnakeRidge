@@ -12,11 +12,16 @@ import {
 function InputHandler() {
   const [conversation, setConversation] = useState<string[]>([]);
   const [gameID, setGameID] = useState<string | undefined>("");
-  const [_styles, setStyles] = useState<TextStyles>();
+  const [styles, setStyles] = useState<TextStyles>(new TextStyles());
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
   const [gameOver, setGameOver] = useState<boolean>(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleTypeState = (typing: boolean) => {
+    setIsTyping(typing);
+  };
 
   // Fetch the initial message from the server when the component mounts.
   useEffect(() => {
@@ -87,13 +92,14 @@ function InputHandler() {
         ? (response as SelectOptionCommand)
         : undefined
     );
-    if (!response.expects_user_input && !response.is_game_over) handleUserInput("");
+    if (!response.expects_user_input && !response.is_game_over)
+      handleUserInput("");
   };
 
   return (
     <div className="mx-auto flex flex-col">
-      <CrtScreen conversation={conversation} />
-      <InputField onSend={handleUserInput} />
+      <CrtScreen conversation={conversation} style={styles} onTypeState={handleTypeState} />
+      <InputField onSend={handleUserInput} disabled={isTyping} gameOver={gameOver}/>
     </div>
   );
 }
