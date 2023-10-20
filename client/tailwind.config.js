@@ -12,7 +12,7 @@ export default {
       colors : {
         neutral: "#f4f4f4",
         dneutral: "#1f1f1f",
-        lbg: "ffffff",
+        lbg: "#ffffff",
         dbg: "#09090b",
         button: "#f4f4f4",
         dbutton: "#27272a",

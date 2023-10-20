@@ -4,9 +4,16 @@ import { SendHorizontal, Loader2 } from "lucide-react";
 type InputFieldProps = {
   onSend: (message: string) => void;
   disabled?: boolean;
+  gameOver?: boolean;
+  onRestart?: () => void;
 };
 
-function InputField({ onSend, disabled }: InputFieldProps) {
+function InputField({
+  onSend,
+  disabled,
+  gameOver,
+  onRestart,
+}: InputFieldProps) {
   const [input, setInput] = useState("");
 
   const handleSendClick = () => {
@@ -16,7 +23,7 @@ function InputField({ onSend, disabled }: InputFieldProps) {
     }
   };
 
-  return (
+  return !gameOver ? (
     <div
       className={`flex justify-between gap-2 border dark:border-dbutton bg-white dark:bg-dbutton w-[85vw] pc:w-[60vw] self-center mt-10 shadow-ctr2xl rounded-xl ${
         disabled ? "bg-opacity-80" : ""
@@ -41,6 +48,15 @@ function InputField({ onSend, disabled }: InputFieldProps) {
         ) : (
           <SendHorizontal size={22} />
         )}
+      </button>
+    </div>
+  ) : (
+    <div className="flex justify-center mt-6">
+      <button
+        onClick={onRestart}
+        className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"
+      >
+        Play Again
       </button>
     </div>
   );

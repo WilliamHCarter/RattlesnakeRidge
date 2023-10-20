@@ -9,7 +9,8 @@ type CrtScreenProps = {
   onTypeState: (typing: boolean) => void;
 };
 
-function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {  //Control auto scroll
+function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
+  //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const handleTyping = () => {
     if (scrollRef.current) {
@@ -44,16 +45,17 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {  //Co
         }}
       ></div>
       <div
-        className=" text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto"
+        className=" text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto overflow-x-hidden"
         ref={scrollRef}
       >
-        <AsciiBanner />
-        <Typewriter
-          conversation={conversation}
-          onMessageUpdate={handleTyping}
-          style={style}
-          onTypeState={onTypeState}
-        />
+        <AsciiBanner>
+          <Typewriter
+            conversation={conversation}
+            onMessageUpdate={handleTyping}
+            style={style}
+            onTypeState={onTypeState}
+          />
+        </AsciiBanner>
       </div>
     </div>
   );
