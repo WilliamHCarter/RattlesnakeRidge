@@ -1,18 +1,21 @@
 import { Dispatch, SetStateAction } from "react";
-import { castCommand, extractTextContent, extractTextStyles } from "./Command";
+import {
+  SelectOptionCommand,
+  castCommand,
+  extractTextContent,
+  extractTextStyles,
+} from "./Command";
 import { TextStyles } from "./components/Typewriter";
 
 interface SGProps {
-  setConversation: Dispatch<SetStateAction<string[]>>;
+  handleConversation: Function;
   setGameID: Dispatch<SetStateAction<string>>;
-  setStyles: Dispatch<SetStateAction<TextStyles>>;
   isMounted: () => boolean;
 }
 
 export const startGame = async ({
-  setConversation,
+  handleConversation,
   setGameID,
-  setStyles,
   isMounted,
 }: SGProps) => {
   const response = await fetch("http://127.0.0.1:5000/start");
@@ -22,20 +25,19 @@ export const startGame = async ({
   }
 
   const data = await response.json();
-  const command = castCommand(data.response);
-  const styles = extractTextStyles(command);
+  console.debug(data);
   if (data.message && typeof data.message === "string") {
-    setConversation((prev) => [...prev, data.message]);
+    if (!data.styles) data.styles = new TextStyles("game start");
+    handleConversation([data.message], [data.styles]);
     setGameID(data.game_id);
-    setStyles(styles);
   }
 };
 
-export async function playGame(
+export async function ply(
   gameID: string,
   userInput: string,
   gameOver: boolean,
-  setConversation: Function
+  handleConversation: Function
 ) {
   if (gameOver) return null;
 
@@ -50,9 +52,9 @@ export async function playGame(
     const command = castCommand(data.response);
     const text = extractTextContent(command);
     const styles = extractTextStyles(command);
-    console.log(data);
-    let uText = userInput ? "\nYou: " + userInput : "";
-    setConversation((prev: string[]) => [...prev, uText, ...text]);
+    let uText = userInput ? ["\nYou: " + userInput].concat(text): text;
+    let uStyles: TextStyles[] = [...Array(uText.length)].map(() => Object.assign(new TextStyles(), styles));
+    handleConversation(uText, uStyles);
 
     return {
       command,
@@ -62,3 +64,19 @@ export async function playGame(
   }
   return null;
 }
+
+export const validateOption = (
+  lastMessage: any,
+  userInput: string,
+  handleConversation: Function
+): boolean => {
+  if (lastMessage?.type == "SelectOptionCommand" && userInput !== "") {
+    let last: SelectOptionCommand = lastMessage as SelectOptionCommand;
+    if (!last.options.some((tuple) => tuple.includes(userInput))) {
+      let error = "Invalid option. Please try again.";
+      handleConversation([error], [new TextStyles()]);
+      return true;
+    }
+  }
+  return false;
+};

@@ -3,12 +3,14 @@ import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
-import { startGame, playGame } from "../API";
+import { startGame, ply, validateOption } from "../API";
 
 function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]);
+  const [styleArray, setStyleArray] = useState<TextStyles[]>([
+    new TextStyles("init"),
+  ]);
   const [gameID, setGameID] = useState<string>("");
-  const [styles, setStyles] = useState<TextStyles>(new TextStyles());
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [restartGame, setRestartGame] = useState<boolean>(false);
@@ -16,8 +18,17 @@ function ResponseHandler() {
     SelectOptionCommand | undefined
   >(undefined);
 
+  const handleConversation = (message: string[], style: TextStyles[]) => {
+    setConversation(prev => [...prev, ...message]);
+    let isGameStarted = styleArray[0].message === "init";
+    setStyleArray(isGameStarted ? style : prev => [...prev, ...style]);
+  };
+  
+
   const handleTypeState = (typing: boolean) => {
-    setIsTyping(typing);
+    if (typing != isTyping) {
+      setIsTyping(typing);
+    }
   };
 
   const restart = async () => {
@@ -29,8 +40,7 @@ function ResponseHandler() {
   useEffect(() => {
     let mounted = true;
     const isMounted = () => mounted;
-    startGame({ setConversation, setGameID, setStyles, isMounted });
-
+    startGame({ handleConversation, setGameID, isMounted });
     return () => {
       mounted = false;
       setRestartGame(false);
@@ -43,26 +53,12 @@ function ResponseHandler() {
     }
   }, [gameID]);
 
-  const validateOption = (lastMessage: any, userInput: string): boolean => {
-    if (lastMessage?.type == "SelectOptionCommand" && userInput !== "") {
-      let last: SelectOptionCommand = lastMessage as SelectOptionCommand;
-      if (!last.options.some((tuple) => tuple.includes(userInput))) {
-        let error = "Invalid option. Please try again.";
-        setConversation((prev) => [...prev, error]);
-        return true;
-      }
-    }
-    return false;
-  };
-
   const handleUserInput = async (userInput: string) => {
     if (gameOver) return;
-    if (validateOption(lastMessage, userInput)) return;
+    if (validateOption(lastMessage, userInput, handleConversation)) return;
 
-    let data = await playGame(gameID, userInput, gameOver, setConversation);
-    if (data?.styles) {
-      setStyles(data?.styles);
-    }
+    let data = await ply(gameID, userInput, gameOver, handleConversation);
+
     setLastMessage(
       data?.command.type == "SelectOptionCommand"
         ? (data.command as SelectOptionCommand)
@@ -76,7 +72,7 @@ function ResponseHandler() {
     <div className="mx-auto flex flex-col">
       <CrtScreen
         conversation={conversation}
-        style={styles}
+        style={styleArray}
         onTypeState={handleTypeState}
       />
       <InputField

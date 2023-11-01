@@ -5,7 +5,7 @@ import "../index.css";
 
 type CrtScreenProps = {
   conversation: string[];
-  style: TextStyles;
+  style: TextStyles[];
   onTypeState: (typing: boolean) => void;
 };
 

@@ -1,4 +1,4 @@
-//======================== Command.tsx ========================
+//======================== Command.ts ========================
 //This file contains the interfaces for server side Commands.
 import { TextStyles } from "./components/Typewriter";
 
@@ -66,7 +66,7 @@ export function extractTextStyles(Command: BaseCommand): TextStyles {
       return style;
 
     case "SelectOptionCommand":
-      return new TextStyles();
+      return new TextStyles("Unstyled Option");
 
     case "MessageDelayCommand":
       const msgDelay = Command as MessageDelayCommand;
