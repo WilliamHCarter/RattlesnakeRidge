@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction} from "react";
+import { Dispatch, SetStateAction } from "react";
 import {
   SelectOptionCommand,
   castCommand,
@@ -25,7 +25,7 @@ export const startGame = async ({
   }
 
   const data = await response.json();
-  console.log(data);
+  console.debug(data);
   if (data.message && typeof data.message === "string") {
     if (!data.styles) data.styles = new TextStyles("game start");
     handleConversation([data.message], [data.styles]);
