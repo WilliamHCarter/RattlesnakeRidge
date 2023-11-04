@@ -18,6 +18,13 @@ export const startGame = async ({
   setGameID,
   isMounted,
 }: SGProps) => {
+  // Check if game_id is already stored in localStorage
+  if (localStorage.getItem("game_id")) {
+    setGameID(localStorage.getItem("game_id") as string);
+    return;
+  }
+
+  // Otherwise, start a new game
   const response = await fetch("http://127.0.0.1:5000/start");
 
   if (!response.ok || !isMounted()) {
@@ -30,6 +37,7 @@ export const startGame = async ({
     if (!data.styles) data.styles = new TextStyles("game start");
     handleConversation([data.message], [data.styles]);
     setGameID(data.game_id);
+    localStorage.setItem("game_id", data.game_id);
   }
 };
 
