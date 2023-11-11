@@ -51,11 +51,12 @@ def play(game_id):
 
 @app.route('/end/<game_id>', methods=['POST'])
 def end_game(game_id):
-    logger.info("Game with id %s ended", game_id)
     if game_id in game_states:
+        logger.info("game with id %s ended", game_id)
         del game_states[game_id]
         return jsonify(message="Game data cleared!")
     else:
+        logger.info("attempted to end game with id %s, but it does not exist", game_id)
         return jsonify(error="Invalid game ID"), 400
 
 @app.route('/test', methods=['GET'])
