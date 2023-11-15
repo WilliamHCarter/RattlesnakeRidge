@@ -36,6 +36,7 @@ export interface SoundDelayCommand extends BaseCommand {
 }
 
 export function castCommand(Command: any): BaseCommand {
+  console.log("Command: ", Command);
   switch (Command.type) {
     case "MessageCommand":
       return Command as MessageCommand;

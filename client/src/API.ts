@@ -36,17 +36,23 @@ export const loadGame = async (props: SGProps) => {
 
   const data = await loadedGame.json();
   console.log("[RESPONSE OK, SETTING CONVERSATION As]", data);
-  //TODO: here we need to loop this up  because we have a list of responses.
+
   for (let i in data) {
     var cmd = data[i];
-    console.log("cmd: ",cmd)
-    const command = castCommand(cmd.response);
-    const text = extractTextContent(command);
-    const styles = extractTextStyles(command);
-    let uStyles: TextStyles[] = [...Array(text.length)].map(() =>
-      Object.assign(new TextStyles(), styles)
-    );
-    props.handleConversation(text, uStyles);
+    console.log("cmd: ", cmd);
+    var text: string[] = [];
+    var styles: TextStyles[] = [];
+    for (var idx in cmd) {
+      console.log("idx: ", cmd[idx]);
+      const command = castCommand(cmd[idx]);
+      text.push(...extractTextContent(command));
+      const s = extractTextStyles(command);
+      let uStyles: TextStyles[] = [...Array(text.length)].map(() =>
+        Object.assign(new TextStyles(), s)
+      );
+      styles.push(...uStyles);
+    }
+    props.handleConversation(text, styles);
   }
 };
 

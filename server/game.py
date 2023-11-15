@@ -81,7 +81,8 @@ class Session:
             self.gameover = True
 
         self.last_scene_output = resp
-        self.logs.append(marshal_command(MessageCommand(f"You: {user_input}")))
+        if user_input is not "":
+            self.logs.append(marshal_command(MessageCommand(f"You: {user_input}")))
         self.logs.append(marshal_command(resp))
         return resp
 
