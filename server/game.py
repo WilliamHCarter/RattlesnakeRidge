@@ -23,7 +23,7 @@ class Session:
         self.prompts = prompts
         self.setting = setting
         self.actors = actors
-
+        self.logs = []
         self.gameover = False
 
         self.start_next_scene()
@@ -81,6 +81,8 @@ class Session:
             self.gameover = True
 
         self.last_scene_output = resp
+        self.logs.append(marshal_command(MessageCommand(f"You: {user_input}")))
+        self.logs.append(marshal_command(resp))
         return resp
 
     def is_input_valid(self, user_input: UserInput_t) -> bool:

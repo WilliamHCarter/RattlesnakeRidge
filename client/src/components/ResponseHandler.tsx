@@ -3,7 +3,7 @@ import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
-import { startGame, ply, validateOption } from "../API";
+import { startGame, ply, validateOption, loadGame } from "../API";
 
 function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]);
@@ -14,16 +14,16 @@ function ResponseHandler() {
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [restartGame, setRestartGame] = useState<boolean>(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
 
   const handleConversation = (message: string[], style: TextStyles[]) => {
-    setConversation(prev => [...prev, ...message]);
+    setConversation((prev) => [...prev, ...message]);
     let isGameStarted = styleArray[0].message === "init";
-    setStyleArray(isGameStarted ? style : prev => [...prev, ...style]);
+    setStyleArray(isGameStarted ? style : (prev) => [...prev, ...style]);
   };
-  
 
   const handleTypeState = (typing: boolean) => {
     if (typing != isTyping) {
@@ -38,20 +38,24 @@ function ResponseHandler() {
   };
 
   useEffect(() => {
-    let mounted = true;
-    const isMounted = () => mounted;
-    startGame({ handleConversation, setGameID, isMounted });
-    return () => {
-      mounted = false;
-      setRestartGame(false);
-    };
-  }, [restartGame]);
-
-  useEffect(() => {
-    if (gameID) {
-      handleUserInput("");
+    // Only call startGame if it hasn't been started yet
+    if (gameStarted && !gameID) {
+      startGame({ handleConversation, setGameID, setConversation });
+      setGameStarted(true);
     }
-  }, [gameID]);
+  }, [gameStarted]);
+
+  //Checks for userID
+  useEffect(() => {
+    if (!gameID){
+      console.log("[GAME ID NOT SET]");
+      setGameStarted(true);
+    }
+    else{
+      console.log("[GAME ID SET]");
+      loadGame({ handleConversation, setGameID, setConversation });
+    }
+  }, []);
 
   const handleUserInput = async (userInput: string) => {
     if (gameOver) return;
