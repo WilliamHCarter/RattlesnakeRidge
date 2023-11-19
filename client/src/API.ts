@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import {
+  GenericMessageCommand,
   SelectOptionCommand,
   castCommand,
   extractTextContent,
@@ -10,7 +11,7 @@ import { TextStyles } from "./components/Typewriter";
 export interface SGProps {
   handleConversation: Function;
   setGameID: Dispatch<SetStateAction<string>>;
-  setConversation: Dispatch<SetStateAction<string[]>>;
+  handleUserInput: Function;
 }
 
 const fetchGame = async (url: string, gameID: string) => {
@@ -42,17 +43,23 @@ export const loadGame = async (props: SGProps) => {
     console.log("cmd: ", cmd);
     var text: string[] = [];
     var styles: TextStyles[] = [];
+    var last: GenericMessageCommand | null = null;
     for (var idx in cmd) {
       console.log("idx: ", cmd[idx]);
-      const command = castCommand(cmd[idx]);
+      const command = castCommand(cmd[idx]) as GenericMessageCommand;
+      command.character_delay_ms = 0;
       text.push(...extractTextContent(command));
       const s = extractTextStyles(command);
       let uStyles: TextStyles[] = [...Array(text.length)].map(() =>
         Object.assign(new TextStyles(), s)
       );
       styles.push(...uStyles);
+      last = command;
     }
     props.handleConversation(text, styles);
+    if (last && !last.expects_user_input) {
+      props.handleUserInput("");
+    }
   }
 };
 

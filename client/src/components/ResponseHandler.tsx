@@ -40,22 +40,32 @@ function ResponseHandler() {
   useEffect(() => {
     // Only call startGame if it hasn't been started yet
     if (gameStarted && !gameID) {
-      startGame({ handleConversation, setGameID, setConversation });
+      console.log("[STARTING GAME]");
+      startGame({ handleConversation, setGameID, handleUserInput });
+      handleUserInput("");
       setGameStarted(true);
     }
   }, [gameStarted]);
 
-  //Checks for userID
+  //Check Local Storage for game_id
   useEffect(() => {
-    if (!gameID){
+    var game_id = localStorage.getItem("game_id");
+    if (game_id) {
+      console.log("[GAME ID FOUND AT LOCAL STORAGE]", game_id);
+      setGameID(game_id);
+    }
+    if (!game_id) {
       console.log("[GAME ID NOT SET]");
       setGameStarted(true);
-    }
-    else{
-      console.log("[GAME ID SET]");
-      loadGame({ handleConversation, setGameID, setConversation });
-    }
+    } 
+    console.log("[ended guy]", gameID);
   }, []);
+
+  useEffect(() => {
+    if (gameID){
+      loadGame({ handleConversation, setGameID, handleUserInput });
+    }
+  },[gameID]);
 
   const handleUserInput = async (userInput: string) => {
     if (gameOver) return;
