@@ -53,7 +53,7 @@ class Session:
     def play(self, user_input: str) -> Command:
         if self.is_gameover():
             logger.warn("User attempted to play a game that has finished")
-            return SceneEndCommand("The game is over.")
+            return SceneEndCommand("The game is over.", is_game_over=True)
 
         if not self.scene_started:
             if user_input is not None:
@@ -81,7 +81,7 @@ class Session:
             self.gameover = True
 
         self.last_scene_output = resp
-        if user_input is not "":
+        if user_input != "":
             self.logs.append(marshal_command(MessageCommand(f"You: {user_input}")))
         self.logs.append(marshal_command(resp))
         return resp

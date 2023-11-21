@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
-import { SelectOptionCommand } from "../Command";
+import { GenericMessageCommand, SelectOptionCommand } from "../Command";
 import { startGame, ply, validateOption, loadGame } from "../API";
 
 function ResponseHandler() {
@@ -38,13 +38,15 @@ function ResponseHandler() {
   };
 
   useEffect(() => {
-    // Only call startGame if it hasn't been started yet
-    if (gameStarted && !gameID) {
-      console.log("[STARTING GAME]");
-      startGame({ handleConversation, setGameID, handleUserInput });
-      handleUserInput("");
-      setGameStarted(true);
-    }
+    const startGameAndHandleInput = async () => {
+      if (gameStarted && !gameID) {
+        console.log("[STARTING GAME]");
+        await startGame({ handleConversation, setGameID, handleUserInput });
+        handleUserInput("");
+        setGameStarted(true);
+      }
+    };
+    startGameAndHandleInput();
   }, [gameStarted]);
 
   //Check Local Storage for game_id
@@ -62,13 +64,14 @@ function ResponseHandler() {
   }, []);
 
   useEffect(() => {
-    if (gameID){
+    if (gameID && conversation.length === 0){
       loadGame({ handleConversation, setGameID, handleUserInput });
     }
   },[gameID]);
 
   const handleUserInput = async (userInput: string) => {
     if (gameOver) return;
+
     if (validateOption(lastMessage, userInput, handleConversation)) return;
 
     let data = await ply(gameID, userInput, gameOver, handleConversation);
@@ -78,8 +81,14 @@ function ResponseHandler() {
         ? (data.command as SelectOptionCommand)
         : undefined
     );
-    if (!data?.command.expects_user_input && !data?.command.is_game_over)
+    if (!data?.command.expects_user_input && !data?.command.is_game_over){
       handleUserInput("");
+    }
+    var msg = data?.command as GenericMessageCommand;
+    if (data?.command.is_game_over || msg?.message.includes("the game is over")) {
+      setGameOver(true);
+      console.log("ITS NOW SET TO OVER")
+    }
   };
 
   return (
