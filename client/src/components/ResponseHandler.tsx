@@ -13,7 +13,6 @@ function ResponseHandler() {
   const [gameID, setGameID] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
-  const [restartGame, setRestartGame] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
@@ -32,62 +31,67 @@ function ResponseHandler() {
   };
 
   const restart = async () => {
-    setRestartGame(true);
+    setGameID("");
     setConversation([]);
+    setStyleArray([new TextStyles("init")]);
     setGameOver(false);
+    setLastMessage(undefined);
+    localStorage.removeItem("game_id");
+    setGameStarted(true);
+    startGameAndHandleInput("");
+  };
+
+  const startGameAndHandleInput = async (game_id: string) => {
+    if (gameStarted && !game_id) {
+      await startGame({ handleConversation, setGameID, handleUserInput });
+      handleUserInput("");
+      setGameStarted(true);
+    }
   };
 
   useEffect(() => {
-    const startGameAndHandleInput = async () => {
-      if (gameStarted && !gameID) {
-        console.log("[STARTING GAME]");
-        await startGame({ handleConversation, setGameID, handleUserInput });
-        handleUserInput("");
-        setGameStarted(true);
-      }
-    };
-    startGameAndHandleInput();
+    startGameAndHandleInput(gameID);
   }, [gameStarted]);
 
   //Check Local Storage for game_id
   useEffect(() => {
     var game_id = localStorage.getItem("game_id");
     if (game_id) {
-      console.log("[GAME ID FOUND AT LOCAL STORAGE]", game_id);
       setGameID(game_id);
     }
     if (!game_id) {
-      console.log("[GAME ID NOT SET]");
       setGameStarted(true);
-    } 
-    console.log("[ended guy]", gameID);
+    }
   }, []);
 
   useEffect(() => {
-    if (gameID && conversation.length === 0){
+    if (gameID && conversation.length === 0) {
       loadGame({ handleConversation, setGameID, handleUserInput });
     }
-  },[gameID]);
+  }, [gameID]);
 
   const handleUserInput = async (userInput: string) => {
     if (gameOver) return;
 
     if (validateOption(lastMessage, userInput, handleConversation)) return;
 
-    let data = await ply(gameID, userInput, gameOver, handleConversation);
+    let id = localStorage.getItem("game_id") as string;
+    let data = await ply(id, userInput, gameOver, handleConversation);
 
     setLastMessage(
       data?.command.type == "SelectOptionCommand"
         ? (data.command as SelectOptionCommand)
         : undefined
     );
-    if (!data?.command.expects_user_input && !data?.command.is_game_over){
+    if (!data?.command.expects_user_input && !data?.command.is_game_over) {
       handleUserInput("");
     }
     var msg = data?.command as GenericMessageCommand;
-    if (data?.command.is_game_over || msg?.message.includes("the game is over")) {
+    if (
+      data?.command.is_game_over ||
+      msg?.message.includes("the game is over")
+    ) {
       setGameOver(true);
-      console.log("ITS NOW SET TO OVER")
     }
   };
 

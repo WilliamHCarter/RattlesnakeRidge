@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import {
-  GenericMessageCommand,
+  BaseCommand,
   SelectOptionCommand,
   castCommand,
   extractTextContent,
@@ -14,11 +14,11 @@ export interface SGProps {
   handleUserInput: Function;
 }
 
-const fetchGame = async (url: string, gameID: string) => {
+const fetchGame = async (url: string, gameID: string, userIn: string = "") => {
   return fetch(url + gameID, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input: "" }),
+    body: JSON.stringify({ input: userIn }),
   });
 };
 
@@ -38,28 +38,12 @@ export const loadGame = async (props: SGProps) => {
   const data = await loadedGame.json();
   console.log("[RESPONSE OK, SETTING CONVERSATION As]", data);
 
-  for (let i in data) {
-    var cmd = data[i];
-    console.log("cmd: ", cmd);
-    var text: string[] = [];
-    var styles: TextStyles[] = [];
-    var last: GenericMessageCommand | null = null;
-    for (var idx in cmd) {
-      console.log("idx: ", cmd[idx]);
-      const command = castCommand(cmd[idx]) as GenericMessageCommand;
-      command.character_delay_ms = 0;
-      text.push(...extractTextContent(command));
-      const s = extractTextStyles(command);
-      let uStyles: TextStyles[] = [...Array(text.length)].map(() =>
-        Object.assign(new TextStyles(), s)
-      );
-      styles.push(...uStyles);
-      last = command;
-    }
-    props.handleConversation(text, styles);
-    if (last && !last.expects_user_input) {
-      props.handleUserInput("");
-    }
+  data.response.forEach((response: any) => {
+    var {uText, uStyles} = processResponse(response);
+    props.handleConversation(uText, uStyles);
+  });
+  if (data.length && !data[data.length - 1].expects_user_input) {
+    props.handleUserInput("");
   }
 };
 
@@ -74,7 +58,6 @@ export const startGame = async (props: SGProps) => {
     loadGame(props);
     return;
   }
-  console.log("[NO GAME ID FOUND AT LOCAL STORAGE]");
 
   // Otherwise, start a new game
   const response = await fetch("http://127.0.0.1:5000/start");
@@ -102,40 +85,33 @@ export async function ply(
   handleConversation: Function
 ) {
   if (gameOver) return null;
-  console.log("plying: ", userInput);
-  const response = await fetch("http://127.0.0.1:5000/play/" + gameID, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input: userInput }),
-  });
-  console.log("Testing: ", gameID);
-  const tester = await fetch("http://127.0.0.1:5000/load/" + gameID, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input: userInput }),
-  });
-  const remy = await tester.json();
-  console.log("tester: \n", remy);
+  console.log("[PLYING]: ", userInput);
+  const response = await fetchGame(
+    "http://127.0.0.1:5000/play/",
+    gameID,
+    userInput
+  );
 
   if (response.ok) {
     const data = await response.json();
-    const command = castCommand(data.response);
-    const text = extractTextContent(command);
-    const styles = extractTextStyles(command);
-    let uText = userInput ? ["\nYou: " + userInput].concat(text) : text;
-    let uStyles: TextStyles[] = [...Array(uText.length)].map(() =>
-      Object.assign(new TextStyles(), styles)
-    );
+    var { uText, uStyles, command, styles } = processResponse(data.response, userInput);
     handleConversation(uText, uStyles);
-
-    return {
-      command,
-      styles,
-      gameOver: command.is_game_over,
-    };
+    return { command, styles, gameOver: command.is_game_over };
   }
   return null;
 }
+
+const processResponse = (data: any, userInput: string = "") => {
+  console.log("[PROCESSING RESPONSE]: ", data);
+  const command = castCommand(data);
+  const text = extractTextContent(command);
+  const styles = extractTextStyles(command);
+  let uText = userInput ? ["\nYou: " + userInput].concat(text) : text;
+  let uStyles: TextStyles[] = [...Array(uText.length)].map(() =>
+    Object.assign(new TextStyles(), styles)
+  );
+  return { uText, uStyles, command, styles };
+};
 
 export const validateOption = (
   lastMessage: any,
