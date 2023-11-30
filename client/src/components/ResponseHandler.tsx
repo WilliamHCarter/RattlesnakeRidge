@@ -20,8 +20,7 @@ function ResponseHandler() {
 
   const handleConversation = (message: string[], style: TextStyles[]) => {
     setConversation((prev) => [...prev, ...message]);
-    let isGameStarted = styleArray[0].message === "init";
-    setStyleArray(isGameStarted ? style : (prev) => [...prev, ...style]);
+    setStyleArray((prev) => [...prev, ...style]);
   };
 
   const handleTypeState = (typing: boolean) => {

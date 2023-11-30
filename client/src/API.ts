@@ -39,7 +39,8 @@ export const loadGame = async (props: SGProps) => {
   console.log("[RESPONSE OK, SETTING CONVERSATION As]", data);
 
   data.response.forEach((response: any) => {
-    var {uText, uStyles} = processResponse(response);
+    var { uText, uStyles } = processResponse(response);
+    uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
     props.handleConversation(uText, uStyles);
   });
   if (data.length && !data[data.length - 1].expects_user_input) {
@@ -94,7 +95,10 @@ export async function ply(
 
   if (response.ok) {
     const data = await response.json();
-    var { uText, uStyles, command, styles } = processResponse(data.response, userInput);
+    var { uText, uStyles, command, styles } = processResponse(
+      data.response,
+      userInput
+    );
     handleConversation(uText, uStyles);
     return { command, styles, gameOver: command.is_game_over };
   }
