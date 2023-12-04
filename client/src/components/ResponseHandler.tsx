@@ -14,6 +14,7 @@ function ResponseHandler() {
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [newGame, setNewGame] = useState(true);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
@@ -103,6 +104,7 @@ function ResponseHandler() {
       />
       <InputField
         onSend={handleUserInput}
+        newGame={newGame}
         disabled={isTyping}
         gameOver={gameOver}
         onRestart={restart}

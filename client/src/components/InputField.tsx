@@ -3,6 +3,7 @@ import { SendHorizontal, Loader2 } from "lucide-react";
 
 type InputFieldProps = {
   onSend: (message: string) => void;
+  newGame?: boolean;
   disabled?: boolean;
   gameOver?: boolean;
   onRestart?: () => void;
@@ -10,6 +11,7 @@ type InputFieldProps = {
 
 function InputField({
   onSend,
+  newGame,
   disabled,
   gameOver,
   onRestart,
@@ -22,6 +24,19 @@ function InputField({
       setInput("");
     }
   };
+
+  if (newGame) {
+    return (
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={onRestart}
+          className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"
+        >
+          Start Game
+        </button>
+      </div>
+    );
+  }
 
   return !gameOver ? (
     <div
