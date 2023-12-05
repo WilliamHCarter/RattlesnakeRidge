@@ -3,17 +3,14 @@ import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
 import { GenericMessageCommand, SelectOptionCommand } from "../Command";
-import { startGame, ply, validateOption, loadGame } from "../API";
+import { startGame, ply, validateOption, loadGame, endGame } from "../API";
 
 function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]);
-  const [styleArray, setStyleArray] = useState<TextStyles[]>([
-    new TextStyles("init"),
-  ]);
+  const [styleArray, setStyleArray] = useState<TextStyles[]>([]);
   const [gameID, setGameID] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
-  const [gameStarted, setGameStarted] = useState(false);
   const [newGame, setNewGame] = useState(true);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
@@ -30,60 +27,58 @@ function ResponseHandler() {
     }
   };
 
-  const restart = async () => {
+  const restart = () => {
+    localStorage.removeItem("game_id");
     setGameID("");
     setConversation([]);
-    setStyleArray([new TextStyles("init")]);
+    setStyleArray([]);
     setGameOver(false);
     setLastMessage(undefined);
-    localStorage.removeItem("game_id");
-    setGameStarted(true);
-    startGameAndHandleInput("");
+    startGameAndHandleInput();
   };
 
-  const startGameAndHandleInput = async (game_id: string) => {
-    if (gameStarted && !game_id) {
-      await startGame({ handleConversation, setGameID, handleUserInput });
-      handleUserInput("");
-      setGameStarted(true);
-    }
+  const startGameAndHandleInput = async () => {
+    await startGame({ handleConversation, setGameID, handleUserInput });
+    handleUserInput("");
+    setNewGame(false);
   };
 
   useEffect(() => {
-    startGameAndHandleInput(gameID);
-  }, [gameStarted]);
-
-  //Check Local Storage for game_id
-  useEffect(() => {
+    console.log("hewwo");
     var game_id = localStorage.getItem("game_id");
     if (game_id) {
       setGameID(game_id);
     }
-    if (!game_id) {
-      setGameStarted(true);
-    }
   }, []);
 
   useEffect(() => {
+    console.log("uwu");
     if (gameID && conversation.length === 0) {
-      loadGame({ handleConversation, setGameID, handleUserInput });
+      console.log("hmm");
+      var rsp = loadGame({ handleConversation, setGameID, handleUserInput });
+      if (!rsp){
+        console.log("hmm2")
+        return;
+      }
+      setNewGame(false);
     }
   }, [gameID]);
 
   const handleUserInput = async (userInput: string) => {
-    if (gameOver) return;
-
     if (validateOption(lastMessage, userInput, handleConversation)) return;
 
     let id = localStorage.getItem("game_id") as string;
-    let data = await ply(id, userInput, gameOver, handleConversation);
-
+    let data = await ply(id, userInput, handleConversation);
     setLastMessage(
       data?.command.type == "SelectOptionCommand"
         ? (data.command as SelectOptionCommand)
         : undefined
     );
-    if (!data?.command.expects_user_input && !data?.command.is_game_over) {
+    if (
+      data &&
+      !data?.command.expects_user_input &&
+      !data?.command.is_game_over
+    ) {
       handleUserInput("");
     }
     var msg = data?.command as GenericMessageCommand;
@@ -92,6 +87,7 @@ function ResponseHandler() {
       msg?.message.includes("the game is over")
     ) {
       setGameOver(true);
+      endGame();
     }
   };
 

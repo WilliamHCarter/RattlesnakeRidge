@@ -31,8 +31,7 @@ export const loadGame = async (props: SGProps) => {
   if (!loadedGame.ok) {
     console.log("[RESPONSE NOT OK, RESTARTING GAME]");
     localStorage.removeItem("game_id");
-    await startGame(props);
-    return;
+    return false;
   }
 
   const data = await loadedGame.json();
@@ -49,18 +48,7 @@ export const loadGame = async (props: SGProps) => {
 };
 
 export const startGame = async (props: SGProps) => {
-  // If there is a game id in local storage, load that game
   console.log("[STARTING GAME]");
-  if (localStorage.getItem("game_id")) {
-    console.log(
-      "[GAME ID FOUND AT LOCAL STORAGE]",
-      localStorage.getItem("game_id")
-    );
-    loadGame(props);
-    return;
-  }
-
-  // Otherwise, start a new game
   const response = await fetch("http://127.0.0.1:5000/start");
 
   if (!response.ok) {
@@ -79,13 +67,17 @@ export const startGame = async (props: SGProps) => {
   }
 };
 
+export const endGame = async () => {
+  let gameID = localStorage.getItem("game_id") as string;
+  const response = await fetchGame("http://127.0.0.1:5000/end/", gameID);
+  return response;
+};
+
 export async function ply(
   gameID: string,
   userInput: string,
-  gameOver: boolean,
   handleConversation: Function
 ) {
-  if (gameOver) return null;
   console.log("[PLYING]: ", userInput);
   const response = await fetchGame(
     "http://127.0.0.1:5000/play/",
@@ -106,10 +98,10 @@ export async function ply(
 }
 
 const processResponse = (data: any, userInput: string = "") => {
-  console.log("[PROCESSING RESPONSE]: ", data);
   const command = castCommand(data);
   const text = extractTextContent(command);
   const styles = extractTextStyles(command);
+  styles.characterDelayMs = 0;
   let uText = userInput ? ["\nYou: " + userInput].concat(text) : text;
   let uStyles: TextStyles[] = [...Array(uText.length)].map(() =>
     Object.assign(new TextStyles(), styles)
