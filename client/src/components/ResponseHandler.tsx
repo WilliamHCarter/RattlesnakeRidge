@@ -22,9 +22,7 @@ function ResponseHandler() {
   };
 
   const handleTypeState = (typing: boolean) => {
-    if (typing != isTyping) {
-      setIsTyping(typing);
-    }
+    setIsTyping(typing);
   };
 
   const restart = () => {
@@ -44,16 +42,13 @@ function ResponseHandler() {
   };
 
   useEffect(() => {
-    var game_id = localStorage.getItem("game_id");
-    if (game_id) {
-      setGameID(game_id);
-    }
+    setGameID(localStorage.getItem("game_id") || "");
   }, []);
 
-  useEffect(() => {
+  useEffect( () => {
     if (gameID && conversation.length === 0) {
-      var rsp = loadGame({ handleConversation, setGameID, handleUserInput });
-      if (!rsp){
+      const rsp = loadGame({ handleConversation, setGameID, handleUserInput });
+      if (!rsp) {
         return;
       }
       setNewGame(false);
@@ -63,25 +58,21 @@ function ResponseHandler() {
   const handleUserInput = async (userInput: string) => {
     if (validateOption(lastMessage, userInput, handleConversation)) return;
 
-    let id = localStorage.getItem("game_id") as string;
-    let data = await ply(id, userInput, handleConversation);
+    const data = await ply(userInput, handleConversation);
+    const cmd = data?.command;
+
     setLastMessage(
-      data?.command.type == "SelectOptionCommand"
-        ? (data.command as SelectOptionCommand)
+      cmd?.type == "SelectOptionCommand"
+        ? (cmd as SelectOptionCommand)
         : undefined
     );
-    if (
-      data &&
-      !data?.command.expects_user_input &&
-      !data?.command.is_game_over
-    ) {
+
+    if (cmd && !cmd.expects_user_input && !cmd.is_game_over) {
       handleUserInput("");
     }
-    var msg = data?.command as GenericMessageCommand;
-    if (
-      data?.command.is_game_over ||
-      msg?.message.includes("the game is over")
-    ) {
+    
+    const msg = cmd as GenericMessageCommand;
+    if (cmd?.is_game_over || msg?.message.includes("the game is over")) {
       setGameOver(true);
       endGame();
     }

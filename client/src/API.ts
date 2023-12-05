@@ -7,24 +7,32 @@ import {
 } from "./Command";
 import { TextStyles } from "./components/Typewriter";
 
+const BASE_URL = "http://127.0.0.1:5000/";
+
 export interface SGProps {
-  handleConversation: Function;
+  handleConversation: (text: string[], styles: TextStyles[]) => void;
   setGameID: Dispatch<SetStateAction<string>>;
-  handleUserInput: Function;
+  handleUserInput: (input: string) => void;
 }
 
-const fetchGame = async (url: string, gameID: string, userIn: string = "") => {
-  return fetch(url + gameID, {
+const fetchGame = async (
+  endpoint: string,
+  gameID: string,
+  userIn: string = ""
+) => {
+  return fetch(`${BASE_URL}${endpoint}${gameID}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ input: userIn }),
   });
 };
 
+const getGameID = (): string => localStorage.getItem("game_id") as string;
+
 export const loadGame = async (props: SGProps) => {
-  let gameID = localStorage.getItem("game_id") as string;
+  const gameID = getGameID();
   props.setGameID(gameID);
-  const loadedGame = await fetchGame("http://127.0.0.1:5000/load/", gameID);
+  const loadedGame = await fetchGame("load/", gameID);
 
   if (!loadedGame.ok) {
     localStorage.removeItem("game_id");
@@ -33,7 +41,7 @@ export const loadGame = async (props: SGProps) => {
 
   const data = await loadedGame.json();
   data.response.forEach((response: any) => {
-    var { uText, uStyles } = processResponse(response);
+    let { uText, uStyles } = processResponse(response);
     uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
     props.handleConversation(uText, uStyles);
   });
@@ -43,7 +51,7 @@ export const loadGame = async (props: SGProps) => {
 };
 
 export const startGame = async (props: SGProps) => {
-  const response = await fetch("http://127.0.0.1:5000/start");
+  const response = await fetch(`${BASE_URL}start`);
 
   if (!response.ok) {
     return;
@@ -59,25 +67,17 @@ export const startGame = async (props: SGProps) => {
 };
 
 export const endGame = async () => {
-  let gameID = localStorage.getItem("game_id") as string;
-  const response = await fetchGame("http://127.0.0.1:5000/end/", gameID);
-  return response;
+  const gameID = getGameID();
+  return fetchGame("end/", gameID);
 };
 
-export async function ply(
-  gameID: string,
-  userInput: string,
-  handleConversation: Function
-) {
-  const response = await fetchGame(
-    "http://127.0.0.1:5000/play/",
-    gameID,
-    userInput
-  );
+export async function ply(userInput: string, handleConversation: Function) {
+  const gameID = getGameID();
+  const response = await fetchGame("play/", gameID, userInput);
 
   if (response.ok) {
     const data = await response.json();
-    var { uText, uStyles, command, styles } = processResponse(
+    let { uText, uStyles, command, styles } = processResponse(
       data.response,
       userInput
     );
@@ -91,7 +91,6 @@ const processResponse = (data: any, userInput: string = "") => {
   const command = castCommand(data);
   const text = extractTextContent(command);
   const styles = extractTextStyles(command);
-  styles.characterDelayMs = 0;
   let uText = userInput ? ["\nYou: " + userInput].concat(text) : text;
   let uStyles: TextStyles[] = [...Array(uText.length)].map(() =>
     Object.assign(new TextStyles(), styles)
@@ -105,9 +104,9 @@ export const validateOption = (
   handleConversation: Function
 ): boolean => {
   if (lastMessage?.type == "SelectOptionCommand" && userInput !== "") {
-    let last: SelectOptionCommand = lastMessage as SelectOptionCommand;
+    const last: SelectOptionCommand = lastMessage as SelectOptionCommand;
     if (!last.options.some((tuple) => tuple.includes(userInput))) {
-      let error = "Invalid option. Please try again.";
+      const error = "Invalid option. Please try again.";
       handleConversation([error], [new TextStyles()]);
       return true;
     }
