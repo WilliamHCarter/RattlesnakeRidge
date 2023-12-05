@@ -44,7 +44,6 @@ function ResponseHandler() {
   };
 
   useEffect(() => {
-    console.log("hewwo");
     var game_id = localStorage.getItem("game_id");
     if (game_id) {
       setGameID(game_id);
@@ -52,12 +51,9 @@ function ResponseHandler() {
   }, []);
 
   useEffect(() => {
-    console.log("uwu");
     if (gameID && conversation.length === 0) {
-      console.log("hmm");
       var rsp = loadGame({ handleConversation, setGameID, handleUserInput });
       if (!rsp){
-        console.log("hmm2")
         return;
       }
       setNewGame(false);
