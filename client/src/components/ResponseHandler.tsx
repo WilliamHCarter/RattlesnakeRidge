@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
-import { GenericMessageCommand, SelectOptionCommand } from "../Command";
+import { SelectOptionCommand } from "../Command";
 import { startGame, ply, validateOption, loadGame, endGame } from "../API";
 
 function ResponseHandler() {
@@ -71,8 +71,7 @@ function ResponseHandler() {
       handleUserInput("");
     }
     
-    const msg = cmd as GenericMessageCommand;
-    if (cmd?.is_game_over || msg?.message.includes("the game is over")) {
+    if (cmd?.is_game_over) {
       setGameOver(true);
       endGame();
     }
