@@ -8,8 +8,6 @@ import {
 import { TextStyles } from "./components/Typewriter";
 
 const BASE_URL = "http://127.0.0.1:5000";
-const GAME_ID_KEY: string = "game_id";
-const getGameID = (): string => localStorage.getItem(GAME_ID_KEY) as string;
 
 export interface SGProps {
   handleConversation: (text: string[], styles: TextStyles[]) => void;
@@ -17,78 +15,94 @@ export interface SGProps {
   handleUserInput: (input: string) => void;
 }
 
-const fetchGame = async (
-  endpoint: string,
-  gameID: string,
-  userIn: string = ""
-) => {
+const fetchGame = (endpoint: string, gameID: string, userIn: string = "") => {
   return fetch(`${BASE_URL}${endpoint}${gameID}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ input: userIn }),
-  });
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error.message);
+      return {
+        ok: false,
+        message: "Failed to connect to server",
+      };
+    });
 };
+
+const getGameID = (): string => localStorage.getItem("game_id") as string;
 
 export const loadGame = async (props: SGProps) => {
-  try {
-    const gameID = getGameID();
-    props.setGameID(gameID);
-    const loadedGame = await fetchGame("/load/", gameID);
+  console.debug("Loading game...");
+  const gameID = getGameID();
+  console.debug("Game ID: " + gameID);
+  props.setGameID(gameID);
 
-    if (!loadedGame.ok) {
-      const errorStyle = new TextStyles();
-      const errorMessage =
-        loadedGame.statusText ||
-        "Failed to load the game. Please try again later.";
-      props.handleConversation([errorMessage], [errorStyle]);
-      localStorage.removeItem(GAME_ID_KEY);
-      return false;
-    }
-
-    const data = await loadedGame.json();
-    data.response.forEach((response: any) => {
-      let { uText, uStyles } = processResponse(response);
-      uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
-      props.handleConversation(uText, uStyles);
-    });
-    if (data.length && !data[data.length - 1].expects_user_input) {
-      props.handleUserInput("");
-    }
-  } catch (error: any) {
-    props.handleConversation(
-      ["Error, unable to load game, please try again later."],
-      [new TextStyles()]
-    );
-    localStorage.removeItem(GAME_ID_KEY);
-  }
-};
-
-export const startGame = async (props: SGProps) => {
-  try {
-    const response = await fetch(`${BASE_URL}/start`);
-    console.log("resp: ",response);
+  fetchGame("/load/", "gameID").then((response) => {
     if (!response.ok) {
-      throw new Error(
-        response.statusText ||
-          "Failed to start the game. Please try again later."
-      );
+      console.debug("Error loading game.");
+      const errorStyle = new TextStyles();
+      const errorMessage = "Unable to load game. Please try again later.";
+      props.handleConversation([errorMessage], [errorStyle]);
+      localStorage.removeItem("game_id");
+      return false;
+    } else {
+      console.debug("Game loaded successfully.");
+      const data = response.json();
+      data.response.forEach((response: any) => {
+        let { uText, uStyles } = processResponse(response);
+        uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
+        props.handleConversation(uText, uStyles);
+      });
+      if (data.length && !data[data.length - 1].expects_user_input) {
+        props.handleUserInput("");
+      }
     }
-
-    const data = await response.json();
-    console.debug(data);
-    if (data.message && typeof data.message === "string") {
-      if (!data.styles) data.styles = new TextStyles("game start");
-      props.handleConversation([data.message], [data.styles]);
-      props.setGameID(data.game_id);
-      localStorage.setItem(GAME_ID_KEY, data.game_id);
-    }
-  } catch (error: any) {
-    const errorStyle = new TextStyles();
-    const errorMessage = 
-      "Unable to start game. Please try again later.";
-    props.handleConversation([errorMessage], [errorStyle]);
-  }
+  });
+  // const loadedGame = fetchGame("/load/", gameID);
+  // if (!loadedGame.ok) {
+  //   console.debug("Error loading game.");
+  //   const errorStyle = new TextStyles();
+  //   const errorMessage = "Unable to load game. Please try again later.";
+  //   props.handleConversation([errorMessage], [errorStyle]);
+  //   localStorage.removeItem("game_id");
+  //   return false;
+  // }
+  // console.debug("Game loaded successfully.");
+  // const data = await loadedGame.json();
+  // data.response.forEach((response: any) => {
+  //   let { uText, uStyles } = processResponse(response);
+  //   uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
+  //   props.handleConversation(uText, uStyles);
+  // });
+  // if (data.length && !data[data.length - 1].expects_user_input) {
+  //   props.handleUserInput("");
+  // }
 };
+
+export const startGame = (props: SGProps) => {
+  fetch(`${BASE_URL}/start`)
+    .then(response => response.json())
+    .then(data => {
+      console.debug(data);
+      if (data.message && typeof data.message === "string") {
+        if (!data.styles) data.styles = new TextStyles("game start");
+        props.handleConversation([data.message], [data.styles]);
+        props.setGameID(data.game_id);
+        localStorage.setItem("game_id", data.game_id);
+      }
+    })
+    .catch(error => {
+      console.debug("Error starting game: ", error);
+      const errorStyle = new TextStyles();
+      const errorMessage = "Unable to start game. Please try again later.";
+      props.handleConversation([errorMessage], [errorStyle]);
+    });
+};
+
 
 export const endGame = async () => {
   const gameID = getGameID();
