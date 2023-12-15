@@ -15,6 +15,8 @@ export interface SGProps {
   handleUserInput: (input: string) => void;
 }
 
+const getGameID = (): string => localStorage.getItem("game_id") as string;
+
 const fetchGame = (endpoint: string, gameID: string, userIn: string = "") => {
   return fetch(`${BASE_URL}${endpoint}${gameID}`, {
     method: "POST",
@@ -22,18 +24,27 @@ const fetchGame = (endpoint: string, gameID: string, userIn: string = "") => {
     body: JSON.stringify({ input: userIn }),
   })
     .then((response) => {
-      return response.json();
+      return response;
     })
     .catch((error) => {
       console.error("Fetch error:", error.message);
-      return {
-        ok: false,
-        message: "Failed to connect to server",
-      };
+      const customError = new Response(
+        JSON.stringify({
+          ok: false,
+          message: error.message,
+        }),
+        {
+          status: 500,
+          statusText: "Custom Error",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return customError;
     });
 };
-
-const getGameID = (): string => localStorage.getItem("game_id") as string;
 
 export const loadGame = async (props: SGProps) => {
   console.debug("Loading game...");
@@ -41,7 +52,7 @@ export const loadGame = async (props: SGProps) => {
   console.debug("Game ID: " + gameID);
   props.setGameID(gameID);
 
-  fetchGame("/load/", "gameID").then((response) => {
+  fetchGame("/load/", gameID).then(async (response) => {
     if (!response.ok) {
       console.debug("Error loading game.");
       const errorStyle = new TextStyles();
@@ -51,7 +62,7 @@ export const loadGame = async (props: SGProps) => {
       return false;
     } else {
       console.debug("Game loaded successfully.");
-      const data = response.json();
+      const data = await response.json();
       data.response.forEach((response: any) => {
         let { uText, uStyles } = processResponse(response);
         uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
@@ -62,32 +73,13 @@ export const loadGame = async (props: SGProps) => {
       }
     }
   });
-  // const loadedGame = fetchGame("/load/", gameID);
-  // if (!loadedGame.ok) {
-  //   console.debug("Error loading game.");
-  //   const errorStyle = new TextStyles();
-  //   const errorMessage = "Unable to load game. Please try again later.";
-  //   props.handleConversation([errorMessage], [errorStyle]);
-  //   localStorage.removeItem("game_id");
-  //   return false;
-  // }
-  // console.debug("Game loaded successfully.");
-  // const data = await loadedGame.json();
-  // data.response.forEach((response: any) => {
-  //   let { uText, uStyles } = processResponse(response);
-  //   uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
-  //   props.handleConversation(uText, uStyles);
-  // });
-  // if (data.length && !data[data.length - 1].expects_user_input) {
-  //   props.handleUserInput("");
-  // }
 };
 
 export const startGame = (props: SGProps) => {
-  fetch(`${BASE_URL}/start`)
-    .then(response => response.json())
-    .then(data => {
-      console.debug(data);
+  return fetch(`${BASE_URL}/start`)
+    .then((response) => response.json())
+    .then((data) => {
+      console.debug("data: ", data);
       if (data.message && typeof data.message === "string") {
         if (!data.styles) data.styles = new TextStyles("game start");
         props.handleConversation([data.message], [data.styles]);
@@ -95,14 +87,13 @@ export const startGame = (props: SGProps) => {
         localStorage.setItem("game_id", data.game_id);
       }
     })
-    .catch(error => {
+    .catch((error) => {
       console.debug("Error starting game: ", error);
       const errorStyle = new TextStyles();
       const errorMessage = "Unable to start game. Please try again later.";
       props.handleConversation([errorMessage], [errorStyle]);
     });
 };
-
 
 export const endGame = async () => {
   const gameID = getGameID();
@@ -112,7 +103,6 @@ export const endGame = async () => {
 export async function ply(userInput: string, handleConversation: Function) {
   const gameID = getGameID();
   const response = await fetchGame("/play/", gameID, userInput);
-
   if (response.ok) {
     const data = await response.json();
     let { uText, uStyles, command, styles } = processResponse(
