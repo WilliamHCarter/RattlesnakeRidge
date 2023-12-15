@@ -156,7 +156,7 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
     conv = copy(game_data.actors) + [game_data.player]
     conversation = make_conversation(game_data, conv)
 
-    responses_left = 12
+    responses_left = 13
     responses = conversation.begin_conversation()
 
     while responses_left > 0:
@@ -172,7 +172,7 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
             yield MessageDelayCommand(msg)
         
         if responses_left > 1:
-            message = yield MessageCommand(f"\nYou have {responses_left} statements left.")
+            message = yield MessageCommand(f"\nYou have {responses_left-1} statements left.")
             responses = conversation.converse(message)
             # Adds an empty line
             yield MessageDelayCommand("", delay_ms=0)

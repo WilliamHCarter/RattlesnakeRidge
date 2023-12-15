@@ -1,6 +1,6 @@
 import uuid
 from flask import Flask, request, jsonify
-from server.game import play_game, initialize_game  
+from server.game import Session, play_game, initialize_game  
 from server import game_states, app, logger
 from server.commands import marshal_command
 
@@ -28,7 +28,7 @@ def start_game():
     )
     
     # Initializing the game state
-    game_states[game_id] = initialize_game(llm=llm)
+    game_states[game_id]: Session = initialize_game(llm=llm)
 
     logger.info("Created a new game with id %s", game_id)
     return jsonify(game_id=game_id, message="Game started!")
@@ -63,6 +63,14 @@ def end_game(game_id):
 def test():
     return jsonify({"message": "Success"})
 
+@app.route('/load/<game_id>', methods=['POST'])
+def load_game(game_id):
+    if(game_id not in game_states):
+        return jsonify(error="Invalid game ID"), 400
+    session: Session = game_states[game_id]
+    return jsonify(response=session.logs)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+

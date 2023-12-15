@@ -35,7 +35,7 @@ export interface SoundDelayCommand extends BaseCommand {
   sound_name: string;
 }
 
-export function castCommand(Command: any): BaseCommand {
+export function castCommand(Command: any): MessageCommand | SelectOptionCommand | MessageDelayCommand | SoundDelayCommand {
   switch (Command.type) {
     case "MessageCommand":
       return Command as MessageCommand;

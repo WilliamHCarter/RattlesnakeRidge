@@ -3,69 +3,78 @@ import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
-import { startGame, ply, validateOption } from "../API";
+import { startGame, ply, validateOption, loadGame, endGame } from "../API";
 
 function ResponseHandler() {
   const [conversation, setConversation] = useState<string[]>([]);
-  const [styleArray, setStyleArray] = useState<TextStyles[]>([
-    new TextStyles("init"),
-  ]);
+  const [styleArray, setStyleArray] = useState<TextStyles[]>([]);
   const [gameID, setGameID] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
-  const [restartGame, setRestartGame] = useState<boolean>(false);
+  const [newGame, setNewGame] = useState(true);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
 
   const handleConversation = (message: string[], style: TextStyles[]) => {
-    setConversation(prev => [...prev, ...message]);
-    let isGameStarted = styleArray[0].message === "init";
-    setStyleArray(isGameStarted ? style : prev => [...prev, ...style]);
+    setConversation((prev) => [...prev, ...message]);
+    setStyleArray((prev) => [...prev, ...style]);
   };
-  
 
   const handleTypeState = (typing: boolean) => {
-    if (typing != isTyping) {
-      setIsTyping(typing);
-    }
+    setIsTyping(typing);
   };
 
-  const restart = async () => {
-    setRestartGame(true);
+  const restart = () => {
+    localStorage.removeItem("game_id");
+    setGameID("");
     setConversation([]);
+    setStyleArray([]);
     setGameOver(false);
+    setLastMessage(undefined);
+    startGameAndHandleInput();
+  };
+
+  const startGameAndHandleInput = async () => {
+    await startGame({ handleConversation, setGameID, handleUserInput });
+    handleUserInput("");
+    setNewGame(false);
   };
 
   useEffect(() => {
-    let mounted = true;
-    const isMounted = () => mounted;
-    startGame({ handleConversation, setGameID, isMounted });
-    return () => {
-      mounted = false;
-      setRestartGame(false);
-    };
-  }, [restartGame]);
+    setGameID(localStorage.getItem("game_id") || "");
+  }, []);
 
-  useEffect(() => {
-    if (gameID) {
-      handleUserInput("");
+  useEffect( () => {
+    if (gameID && conversation.length === 0) {
+      const rsp = loadGame({ handleConversation, setGameID, handleUserInput });
+      if (!rsp) {
+        return;
+      }
+      setNewGame(false);
     }
   }, [gameID]);
 
   const handleUserInput = async (userInput: string) => {
-    if (gameOver) return;
     if (validateOption(lastMessage, userInput, handleConversation)) return;
 
-    let data = await ply(gameID, userInput, gameOver, handleConversation);
+    const data = await ply(userInput, handleConversation);
+    const cmd = data?.command;
 
     setLastMessage(
-      data?.command.type == "SelectOptionCommand"
-        ? (data.command as SelectOptionCommand)
+      cmd?.type == "SelectOptionCommand"
+        ? (cmd as SelectOptionCommand)
         : undefined
     );
-    if (!data?.command.expects_user_input && !data?.command.is_game_over)
+
+    if (cmd && !cmd.expects_user_input && !cmd.is_game_over) {
       handleUserInput("");
+    }
+    
+    if (cmd?.is_game_over) {
+      setGameOver(true);
+      endGame();
+    }
   };
 
   return (
@@ -77,6 +86,7 @@ function ResponseHandler() {
       />
       <InputField
         onSend={handleUserInput}
+        newGame={newGame}
         disabled={isTyping}
         gameOver={gameOver}
         onRestart={restart}
