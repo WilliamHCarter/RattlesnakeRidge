@@ -26,7 +26,7 @@ jobs:
 
       - name: Build, tag, and push Docker image to Amazon ECR
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest"
+          IMAGE_URI="${{ secrets.ECR_REPOSITORY }}:latest"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
