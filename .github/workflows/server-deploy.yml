@@ -24,9 +24,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push Docker image to Amazon ECR
+      - name: Login to Amazon ECR Public
         run: |
-          IMAGE_URI="${{ secrets.ECR_REPOSITORY }}:latest"
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
+
+      - name: Build, tag, and push Docker image to Amazon ECR Public
+        run: |
+          IMAGE_TAG="latest"
+          IMAGE_URI="${{ secrets.ECR_URI }}/${{ secrets.ECR_REPO_NAME }}:$IMAGE_TAG"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
