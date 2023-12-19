@@ -20,10 +20,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
       - name: Login to Amazon ECR Public
         run: |
           echo ${{ secrets.AWS_SECRET_ACCESS_KEY }} | aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
@@ -40,15 +36,20 @@ jobs:
         run: |
           aws ecr list-images --repository-name ${{ secrets.ECR_REPOSITORY }} --query 'imageIds[?imageTag!=`latest`]' --output json | jq -r '.[] | .imageDigest' | xargs -I {} aws ecr batch-delete-image --repository-name ${{ secrets.ECR_REPOSITORY }} --image-ids imageDigest={}
 
-      - name: Fill in the new image ID in the ECS task definition JSON
-        id: task-def
+      - name: Retrieve and Update ECS Task Definition
         run: |
-          NEW_IMAGE_URI="${{ env.IMAGE_URI }}"
-          TASK_DEF=$(jq --arg NEW_IMAGE_URI "$NEW_IMAGE_URI" '.containerDefinitions[0].image = $NEW_IMAGE_URI' task-definition.json)
-          echo "$TASK_DEF" > task-def-updated.json
-          NEW_TASK_DEFINITION=$(aws ecs register-task-definition --cli-input-json file://task-def-updated.json)
-          NEW_TASK_DEFINITION_ARN=$(echo $NEW_TASK_DEFINITION | jq -r '.taskDefinition.taskDefinitionArn')
-          echo "NEW_TASK_DEFINITION_ARN=$NEW_TASK_DEFINITION_ARN" >> $GITHUB_ENV
+          # Retrieve the current task definition
+          aws ecs describe-task-definition --task-definition deploy-to-ec2 > current-task-def.json
+          
+          # Update the task definition with the new image
+          NEW_IMAGE_URI="${{ secrets.ECR_URI }}/${{ secrets.ECR_REPO_NAME }}:latest"
+          jq --arg NEW_IMAGE_URI "$NEW_IMAGE_URI" '.taskDefinition.containerDefinitions[0].image = $NEW_IMAGE_URI' current-task-def.json > modified-task-def.json
+          
+          # Register the new task definition
+          NEW_TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://modified-task-def.json)
+          NEW_TASK_DEF_ARN=$(echo $NEW_TASK_DEF | jq -r '.taskDefinition.taskDefinitionArn')
+          
+          echo "New task definition ARN: $NEW_TASK_DEF_ARN"
 
       - name: Deploy to ECS
         run: |
