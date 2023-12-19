@@ -7,7 +7,7 @@ import {
 } from "./Command";
 import { TextStyles } from "./components/Typewriter";
 
-const BASE_URL = "http://127.0.0.1:5000";
+const BASE_URL = import.meta.env.VITE_API_ADDRESS;
 
 export interface SGProps {
   handleConversation: (text: string[], styles: TextStyles[]) => void;

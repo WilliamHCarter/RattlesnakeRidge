@@ -1,0 +1,51 @@
+name: Deploy Server to AWS
+
+on:
+  push:
+    branches: ['main']
+
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push Docker image to Amazon ECR
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+      
+      - name: Cleanup old images from ECR
+        run: |
+          aws ecr list-images --repository-name ${{ secrets.ECR_REPOSITORY }} --query 'imageIds[?imageTag!=`latest`]' --output json | jq -r '.[] | .imageDigest' | xargs -I {} aws ecr batch-delete-image --repository-name ${{ secrets.ECR_REPOSITORY }} --image-ids imageDigest={}
+
+      - name: Fill in the new image ID in the ECS task definition JSON
+              id: task-def
+              run: |
+                NEW_IMAGE_URI="${{ env.IMAGE_URI }}"
+                TASK_DEF=$(jq --arg NEW_IMAGE_URI "$NEW_IMAGE_URI" '.containerDefinitions[0].image = $NEW_IMAGE_URI' task-definition.json)
+                echo "$TASK_DEF" > task-def-updated.json
+                NEW_TASK_DEFINITION=$(aws ecs register-task-definition --cli-input-json file://task-def-updated.json)
+                NEW_TASK_DEFINITION_ARN=$(echo $NEW_TASK_DEFINITION | jq -r '.taskDefinition.taskDefinitionArn')
+                echo "NEW_TASK_DEFINITION_ARN=$NEW_TASK_DEFINITION_ARN" >> $GITHUB_ENV
+
+    - name: Deploy to ECS
+      run: |
+        aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER_NAME }} --service ${{ secrets.ECS_SERVICE_NAME }} --task-definition ${{ env.NEW_TASK_DEFINITION_ARN }} --force-new-deployment
