@@ -42,8 +42,3 @@ jobs:
             --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
             --task-definition deploy-to-ec2 \
             --network-configuration "awsvpcConfiguration={subnets=[subnet-004e3107c72259935,subnet-08b8dc37f67e6b7b2,subnet-0ba778596923cd4a0,subnet-0aa9c47c1ed1de680,subnet-0268b25efb40a90c4,subnet-0f38b5aea0453e0a3],securityGroups=[sg-068a4ceac39a4a38b,sg-035b2857ef489efb9]}"
-
-
-      - name: Update ECS Service
-        run: |
-          aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER_NAME }} --service ${{ secrets.ECS_SERVICE_NAME }} --task-definition deploy-to-ec2
