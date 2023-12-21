@@ -3,7 +3,6 @@ name: Deploy Server to AWS
 on:
   push:
     branches: ['main']
-
   workflow_dispatch:
 
 jobs:
@@ -21,13 +20,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push Docker image to Amazon ECR
+      - name: Login to Amazon ECR Public
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest"
+          echo ${{ secrets.AWS_SECRET_ACCESS_KEY }} | aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
+
+      - name: Build, tag, and push Docker image to Amazon ECR Public
+        run: |
+          IMAGE_TAG="latest"
+          IMAGE_URI="${{ secrets.ECR_URI }}/${{ secrets.ECR_REPO_NAME }}:$IMAGE_TAG"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
@@ -36,16 +36,9 @@ jobs:
         run: |
           aws ecr list-images --repository-name ${{ secrets.ECR_REPOSITORY }} --query 'imageIds[?imageTag!=`latest`]' --output json | jq -r '.[] | .imageDigest' | xargs -I {} aws ecr batch-delete-image --repository-name ${{ secrets.ECR_REPOSITORY }} --image-ids imageDigest={}
 
-      - name: Fill in the new image ID in the ECS task definition JSON
-              id: task-def
-              run: |
-                NEW_IMAGE_URI="${{ env.IMAGE_URI }}"
-                TASK_DEF=$(jq --arg NEW_IMAGE_URI "$NEW_IMAGE_URI" '.containerDefinitions[0].image = $NEW_IMAGE_URI' task-definition.json)
-                echo "$TASK_DEF" > task-def-updated.json
-                NEW_TASK_DEFINITION=$(aws ecs register-task-definition --cli-input-json file://task-def-updated.json)
-                NEW_TASK_DEFINITION_ARN=$(echo $NEW_TASK_DEFINITION | jq -r '.taskDefinition.taskDefinitionArn')
-                echo "NEW_TASK_DEFINITION_ARN=$NEW_TASK_DEFINITION_ARN" >> $GITHUB_ENV
-
-    - name: Deploy to ECS
-      run: |
-        aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER_NAME }} --service ${{ secrets.ECS_SERVICE_NAME }} --task-definition ${{ env.NEW_TASK_DEFINITION_ARN }} --force-new-deployment
+      - name: Start new task using 'deploy-to-ec2' task definition
+        run: |
+          aws ecs run-task \
+            --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
+            --task-definition deploy-to-ec2 \
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-004e3107c72259935,subnet-08b8dc37f67e6b7b2,subnet-0ba778596923cd4a0,subnet-0aa9c47c1ed1de680,subnet-0268b25efb40a90c4,subnet-0f38b5aea0453e0a3],securityGroups=[sg-068a4ceac39a4a38b,sg-035b2857ef489efb9]}"
