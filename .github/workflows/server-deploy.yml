@@ -2,7 +2,7 @@ name: Deploy Server to AWS
 
 on:
   push:
-    branches: ['main', 'hotfix/server-pipelines']
+    branches: ['main']
   workflow_dispatch:
 
 jobs:
