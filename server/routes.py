@@ -1,7 +1,7 @@
 import uuid
 from flask import Flask, request, jsonify
 from server.game import Session, play_game, initialize_game  
-from server import game_states, app, logger
+from server import AI_API_LIMIT, AI_API_USAGE, game_states, app, logger
 from server.commands import marshal_command
 
 import logging
@@ -47,6 +47,10 @@ def play(game_id):
         return jsonify(error="Bad user input"), 400
     
     command = play_game(game_state, user_input)
+    AI_API_USAGE += 1
+    if AI_API_USAGE > AI_API_LIMIT:
+        logger.error("AI API usage exceeded limit of %d", AI_API_LIMIT)
+        return jsonify(error="AI API usage exceeded limit"), 429
     return jsonify(response=marshal_command(command))
 
 @app.route('/end/<game_id>', methods=['POST'])

@@ -16,6 +16,8 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 # Global in-memory game state storage for active sessions
 game_states = {}
+AI_API_USAGE = 0
+AI_API_LIMIT = 50
 
 # Define allowed origins based on the environment
 if os.environ.get('FLASK_ENV') == 'development':
