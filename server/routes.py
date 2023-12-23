@@ -37,7 +37,7 @@ def start_game():
 def play(game_id):
     user_input = request.json.get('input')
     game_state = game_states.get(game_id)
-    
+
     if game_state is None:
         logger.warning("`/play` called with an invalid game id %s", game_id)
         return jsonify(error="Invalid game ID"), 400
@@ -47,13 +47,16 @@ def play(game_id):
         return jsonify(error="Bad user input"), 400
     
     command = play_game(game_state, user_input)
-    global AI_API_USAGE
-    global AI_API_LIMIT
     
-    AI_API_USAGE += 1
-    if AI_API_USAGE > AI_API_LIMIT:
-        logger.error("AI API usage exceeded limit of %d", AI_API_LIMIT)
-        return jsonify(error="AI API usage exceeded limit"), 429
+
+    if user_input != "" and command !="":
+        global AI_API_USAGE
+        global AI_API_LIMIT
+        AI_API_USAGE += 1
+        if AI_API_USAGE > AI_API_LIMIT:
+            logger.error("AI API usage exceeded limit %d", AI_API_LIMIT)
+            return jsonify(error="Unfortunately we've exceeded our daily limit for AI usage. Please continue your adventure tomorrow."), 429
+            
     return jsonify(response=marshal_command(command))
 
 @app.route('/end/<game_id>', methods=['POST'])
