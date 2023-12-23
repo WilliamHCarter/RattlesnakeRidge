@@ -47,6 +47,9 @@ def play(game_id):
         return jsonify(error="Bad user input"), 400
     
     command = play_game(game_state, user_input)
+    global AI_API_USAGE
+    global AI_API_LIMIT
+    
     AI_API_USAGE += 1
     if AI_API_USAGE > AI_API_LIMIT:
         logger.error("AI API usage exceeded limit of %d", AI_API_LIMIT)
