@@ -18,6 +18,14 @@ app.config['SESSION_TYPE'] = 'filesystem'
 game_states = {}
 AI_API_USAGE: int = 0
 AI_API_LIMIT: int = 30
+last_reset_date = datetime.now().date()  # Initialize with the current date
+
+def check_and_reset_limit(self):
+    # Check if the current date is different from the last reset date
+    if datetime.now().date() > self.last_reset_date:
+        # Reset the usage and update the last reset date
+        API_USAGE = 0
+        last_reset_date = datetime.now().date()
 
 # Define allowed origins based on the environment
 if os.environ.get('FLASK_ENV') == 'development':
