@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import AsciiBanner from "./AsciiBanner";
 import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
@@ -13,14 +13,26 @@ type CrtScreenProps = {
 function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
   //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
   const handleTyping = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   };
 
+  const toggleFullscreen = () => {
+    // Implement fullscreen toggle functionality
+  };
+
   return (
     <div className="z-10 overflow-hidden flex justify-center self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative">
+    <div 
+      className="z-10 overflow-hidden flex justify-center self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative" 
+      onMouseEnter={() => setIsHovering(true)} 
+      onMouseLeave={() => setIsHovering(false)}
+      onClick={() => setIsHovering(!isHovering)}
+    >
       <div className="z-7 rounded-xl absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919]" />
       <div
         className="CRT Filter rounded-xl"
@@ -58,12 +70,19 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
           />
         </AsciiBanner>
       </div>
-      <button
-          className="absolute bottom-4 right-4 inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton z-30"
-          aria-label="Fullscreen"
-        >
-          <Maximize />
-        </button>
+      {isHovering && (
+        <>
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black via-black to-transparent opacity-25 z-20"></div>
+          <button
+            className="absolute bottom-4 right-4 inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton z-30"
+            aria-label="Fullscreen"
+            onClick={toggleFullscreen}
+          >
+            <Maximize />
+          </button>
+        </>
+      )}
+    </div>
     </div>
   );
 }
