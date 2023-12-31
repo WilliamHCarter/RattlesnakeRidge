@@ -2,6 +2,7 @@ import { useRef } from "react";
 import AsciiBanner from "./AsciiBanner";
 import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
+import { Maximize } from "lucide-react";
 
 type CrtScreenProps = {
   conversation: string[];
@@ -57,6 +58,12 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
           />
         </AsciiBanner>
       </div>
+      <button
+          className="absolute bottom-4 right-4 inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton z-30"
+          aria-label="Fullscreen"
+        >
+          <Maximize />
+        </button>
     </div>
   );
 }
