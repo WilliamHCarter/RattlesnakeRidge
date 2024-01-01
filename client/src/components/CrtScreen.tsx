@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import AsciiBanner from "./AsciiBanner";
 import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
-import { Maximize } from "lucide-react";
+import { Maximize, Minimize } from "lucide-react";
 
 type CrtScreenProps = {
   conversation: string[];
@@ -14,6 +14,7 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
   //Control auto scroll
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleTyping = () => {
     if (scrollRef.current) {
@@ -22,18 +23,32 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
   };
 
   const toggleFullscreen = () => {
-    // Implement fullscreen toggle functionality
+    setIsFullscreen(!isFullscreen);
   };
 
+  const fullscreenStyle: React.CSSProperties = isFullscreen
+  ? {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: 50, // zIndex is a number, so this is fine
+    }
+  : {};
+
   return (
-    <div className="z-10 overflow-hidden flex justify-center self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative">
-    <div 
-      className="z-10 overflow-hidden flex justify-center self-center w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl relative" 
+  <div 
+    className={`overflow-hidden flex justify-center self-center relative ${isFullscreen ? "w-full h-full rounded-none" : "w-[85vw] pc:w-[70vw] h-[65vh] rounded-xl"}`} 
+    style={fullscreenStyle}
+  >    
+  <div 
+      className="z-10 overflow-hidden flex justify-center self-center w-full h-full relative" 
       onMouseEnter={() => setIsHovering(true)} 
       onMouseLeave={() => setIsHovering(false)}
       onClick={() => setIsHovering(!isHovering)}
     >
-      <div className="z-7 rounded-xl absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919]" />
+      <div className="z-7 absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919]" />
       <div
         className="CRT Filter rounded-xl"
         style={{
@@ -78,7 +93,7 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
             aria-label="Fullscreen"
             onClick={toggleFullscreen}
           >
-            <Maximize />
+            {isFullscreen? <Minimize /> : <Maximize />}
           </button>
         </>
       )}
