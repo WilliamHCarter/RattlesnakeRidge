@@ -12,6 +12,7 @@ function ResponseHandler() {
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [newGame, setNewGame] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
@@ -83,6 +84,8 @@ function ResponseHandler() {
         conversation={conversation}
         style={styleArray}
         onTypeState={handleTypeState}
+        isFullscreen={isFullscreen}
+        toggleFullscreen={() => setIsFullscreen(!isFullscreen)}
       />
       <InputField
         onSend={handleUserInput}
@@ -90,9 +93,10 @@ function ResponseHandler() {
         disabled={isTyping}
         gameOver={gameOver}
         onRestart={restart}
+        isFullscreen={isFullscreen}
       />
     </div>
-  );
+  );  
 }
 
 export default ResponseHandler;

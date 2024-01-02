@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { SendHorizontal, Loader2 } from "lucide-react";
 
 type InputFieldProps = {
@@ -7,15 +7,10 @@ type InputFieldProps = {
   disabled?: boolean;
   gameOver?: boolean;
   onRestart?: () => void;
+  isFullscreen?: boolean;
 };
 
-function InputField({
-  onSend,
-  newGame,
-  disabled,
-  gameOver,
-  onRestart,
-}: InputFieldProps) {
+function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscreen }: InputFieldProps) {
   const [input, setInput] = useState("");
 
   const handleSendClick = () => {
@@ -24,6 +19,18 @@ function InputField({
       setInput("");
     }
   };
+
+  // Style adjustments for fullscreen mode
+  const fullscreenStyles: React.CSSProperties = isFullscreen ? {
+    backgroundColor: 'transparent',
+    color: 'green',
+    borderTop: '2px solid green',
+    position: 'absolute',
+    bottom: '20px', // Adjust as needed
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '80%', // Adjust as needed
+  } : {};
 
   if (newGame) {
     return (
@@ -43,6 +50,7 @@ function InputField({
       className={`flex justify-between gap-2 border dark:border-dbutton bg-white dark:bg-dbutton w-[85vw] pc:w-[60vw] self-center mt-10 shadow-ctr2xl rounded-xl ${
         disabled ? "bg-opacity-80" : ""
       }`}
+      style={fullscreenStyles}
     >
       <input
         className="rounded-xl p-3 w-full bg-transparent focus:outline-none"

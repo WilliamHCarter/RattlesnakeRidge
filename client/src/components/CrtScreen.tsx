@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import AsciiBanner from "./AsciiBanner";
 import Typewriter, { TextStyles } from "./Typewriter";
 import "../index.css";
@@ -8,13 +8,13 @@ type CrtScreenProps = {
   conversation: string[];
   style: TextStyles[];
   onTypeState: (typing: boolean) => void;
+  isFullscreen: boolean;
+  toggleFullscreen: () => void;
 };
 
-function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
-  //Control auto scroll
+function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFullscreen }: CrtScreenProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [isHovering, setIsHovering] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleTyping = () => {
     if (scrollRef.current) {
@@ -22,20 +22,16 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
     }
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
-
   const fullscreenStyle: React.CSSProperties = isFullscreen
-  ? {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      zIndex: 50, // zIndex is a number, so this is fine
-    }
-  : {};
+    ? {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+      }
+    : {};
+
 
   return (
   <div 
@@ -43,7 +39,7 @@ function CrtScreen({ conversation, style, onTypeState }: CrtScreenProps) {
     style={fullscreenStyle}
   >    
   <div 
-      className="z-10 overflow-hidden flex justify-center self-center w-full h-full relative" 
+      className="z-0 overflow-hidden flex justify-center self-center w-full h-full relative" 
       onMouseEnter={() => setIsHovering(true)} 
       onMouseLeave={() => setIsHovering(false)}
       onClick={() => setIsHovering(!isHovering)}
