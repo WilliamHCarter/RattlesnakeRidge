@@ -24,12 +24,22 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
   const fullscreenStyles: React.CSSProperties = isFullscreen ? {
     backgroundColor: 'transparent',
     color: 'green',
-    borderTop: '2px solid green',
+    border: '2px solid green',
     position: 'absolute',
     bottom: '20px', // Adjust as needed
     left: '50%',
     transform: 'translateX(-50%)',
     width: '80%', // Adjust as needed
+  } : {};
+
+  const fullscreenButtonStyles: React.CSSProperties = isFullscreen ? {
+    backgroundColor: 'transparent',
+    color: 'green',
+    border: '2px solid green',
+    position: 'absolute',
+    bottom: '20px', // Adjust as needed
+    left: '50%',
+    transform: 'translateX(-50%)',
   } : {};
 
   if (newGame) {
@@ -38,6 +48,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
         <button
           onClick={onRestart}
           className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"
+          style={fullscreenButtonStyles}
         >
           Start Game
         </button>
@@ -78,6 +89,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
       <button
         onClick={onRestart}
         className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"
+        style={fullscreenButtonStyles}
       >
         Play Again
       </button>
