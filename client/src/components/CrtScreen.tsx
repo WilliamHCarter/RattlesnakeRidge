@@ -40,9 +40,9 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
   >    
   <div 
       className="z-0 overflow-hidden flex justify-center self-center w-full h-full relative" 
-      onMouseEnter={() => setIsHovering(true)} 
-      onMouseLeave={() => setIsHovering(false)}
-      onClick={() => setIsHovering(!isHovering)}
+      onMouseEnter={() => !isFullscreen && setIsHovering(true)}
+      onMouseLeave={() => !isFullscreen && setIsHovering(false)}
+      onClick={() => window.innerWidth < 600 && setIsHovering(!isHovering)}
     >
       <div className="z-7 absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919]" />
       <div
@@ -81,9 +81,14 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
           />
         </AsciiBanner>
       </div>
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-20 "
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+        >
       {isHovering && (
         <>
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black via-black to-transparent opacity-25 z-20"></div>
+          <div className="bg-gradient-to-t from-black via-black to-transparent opacity-25 z-20"/>
           <button
             className="absolute bottom-4 right-4 inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton z-30"
             aria-label="Fullscreen"
@@ -93,6 +98,7 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
           </button>
         </>
       )}
+      </div>
     </div>
     </div>
   );
