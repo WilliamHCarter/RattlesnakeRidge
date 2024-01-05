@@ -30,6 +30,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
     left: '50%',
     transform: 'translateX(-50%)',
     width: '80%',
+    animation: 'textWarp 0.15s infinite'
   } : {};
 
   const fullscreenButtonStyles: React.CSSProperties = isFullscreen ? {
@@ -40,6 +41,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
     bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
+    animation: 'textWarp 0.15s infinite'
   } : {};
 
   if (newGame) {
@@ -64,7 +66,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
       style={fullscreenStyles}
     >
       <input
-        className={`rounded-xl p-3 w-full bg-transparent focus:outline-none ${isFullscreen ? 'placeholder-green-600' : ''}`}
+        className={`rounded-xl p-3 w-full bg-transparent focus:outline-none ${isFullscreen ? 'placeholder-green-600 text-warp' : ''}`}
         placeholder={disabled ? "" : "Type your message..."}
         value={input}
         onChange={(e) => setInput(e.target.value)}
