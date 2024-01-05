@@ -23,21 +23,21 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
   // Style adjustments for fullscreen mode
   const fullscreenStyles: React.CSSProperties = isFullscreen ? {
     backgroundColor: 'transparent',
-    color: 'green',
-    border: '2px solid green',
+    color: '#059669',
+    border: '2px solid #059669',
     position: 'absolute',
-    bottom: '20px', // Adjust as needed
+    bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '80%', // Adjust as needed
+    width: '80%',
   } : {};
 
   const fullscreenButtonStyles: React.CSSProperties = isFullscreen ? {
     backgroundColor: 'transparent',
-    color: 'green',
-    border: '2px solid green',
+    color: '#059669',
+    border: '2px solid #059669',
     position: 'absolute',
-    bottom: '20px', // Adjust as needed
+    bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
   } : {};
@@ -64,7 +64,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
       style={fullscreenStyles}
     >
       <input
-        className="rounded-xl p-3 w-full bg-transparent focus:outline-none"
+        className={`rounded-xl p-3 w-full bg-transparent focus:outline-none ${isFullscreen ? 'placeholder-green-600' : ''}`}
         placeholder={disabled ? "" : "Type your message..."}
         value={input}
         onChange={(e) => setInput(e.target.value)}

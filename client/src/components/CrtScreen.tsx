@@ -92,8 +92,8 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
           <button
             className="absolute bottom-4 right-4 inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton z-30"
             aria-label="Fullscreen"
-            onClick={toggleFullscreen}
-          >
+            onClick={() => { toggleFullscreen(); setIsHovering(false); }}
+            >
             {isFullscreen? <Minimize /> : <Maximize />}
           </button>
         </>
