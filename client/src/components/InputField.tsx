@@ -23,25 +23,25 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
   // Style adjustments for fullscreen mode
   const fullscreenStyles: React.CSSProperties = isFullscreen ? {
     backgroundColor: 'transparent',
-    color: '#059669',
-    border: '2px solid #059669',
+    color: '#16A34A',
+    border: '2px solid #16A34A',
     position: 'absolute',
     bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
     width: '80%',
-    animation: 'textWarp 0.15s infinite'
+    animation: 'borderWarp 0.15s infinite'
   } : {};
 
   const fullscreenButtonStyles: React.CSSProperties = isFullscreen ? {
     backgroundColor: 'transparent',
-    color: '#059669',
-    border: '2px solid #059669',
+    color: '#16A34A',
+    border: '2px solid #16A34A',
     position: 'absolute',
     bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
-    animation: 'textWarp 0.15s infinite'
+    animation: 'textWarp 0.15s infinite, borderWarp 0.15s infinite'
   } : {};
 
   if (newGame) {
