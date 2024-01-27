@@ -46,7 +46,7 @@ function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscre
 
   if (newGame) {
     return (
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-6 z-0">
         <button
           onClick={onRestart}
           className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"

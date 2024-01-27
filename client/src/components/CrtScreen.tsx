@@ -44,7 +44,8 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
       onMouseLeave={() => !isFullscreen && setIsHovering(false)}
       onClick={() => window.innerWidth < 600 && setIsHovering(!isHovering)}
     >
-      <div className="z-7 absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919]" />
+      < div className="z-6 absolute h-full w-full bg-[#0c0d0e]" />
+      <div className="z-7 absolute h-full w-full bg-gradient-radial from-[#063938] dark:from-[#042625] to-[#0c1919] opacity-100" />
       <div
         className="CRT Filter rounded-xl"
         style={{
@@ -61,7 +62,7 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
         }}
       />
       <div
-        className="h-[100px] absolute w-full z-10 opacity-30 dark:opacity-20"
+        className="h-[100px] absolute w-full z-13 opacity-30 dark:opacity-20"
         style={{
           background:
             "linear-gradient( 0deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.2) 10%, rgba(0, 0, 0, 0.1) 100% )",
