@@ -16,6 +16,20 @@ function CrtScreen({ conversation, style, onTypeState, isFullscreen, toggleFulls
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [isHovering, setIsHovering] = useState(false);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullscreen) {
+        toggleFullscreen();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen, toggleFullscreen]);
+
   const handleTyping = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
