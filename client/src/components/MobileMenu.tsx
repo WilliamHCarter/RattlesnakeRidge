@@ -1,54 +1,38 @@
 import { useState } from "react";
-import { Settings, Github, Menu } from "lucide-react";
+import { Github, Menu } from "lucide-react";
 import SettingsCard from "./SettingsCard";
 
-function classNames(...classes: any) {
-  return classes.filter(Boolean).join(" ");
-}
-
-export default function Example() {
+export default function MobileMenu({ fullscreen }: { fullscreen: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [settingsCardOpen, setSettingsCardOpen] = useState(false); // Add state for settings card
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const menuItems = [
+  const menuItems: any = [
     {
       label: "Github",
       href: "https://github.com/WilliamHCarter/RattlesnakeRidge",
       icon: Github,
     },
-    {
-      label: "Settings",
-      icon: Settings,
-      onClick: () => {
-        setSettingsCardOpen(true);
-        setIsOpen(false);
-      },
-    },
   ];
 
   return (
     <>
-      <button
-        className={`inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton ${classNames(
-          isOpen ? "z-30" : "z-10"
-        )}`}
-        aria-label="Menu"
-        onClick={toggleMenu}
-      >
-        <Menu />
-      </button>
+      {!fullscreen && (
+        <button
+          className="inline-flex items-center justify-center gap-x-1.5 rounded-md w-10 h-10 bg-button dark:bg-dbutton z-30"
+          aria-label="Menu"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <Menu />
+        </button>
+      )}
 
       <div
-        className={`absolute right-0 z-30 mt-10 w-64 text-xs bg-white dark:bg-dbg leading-5 rounded-lg shadow-lg border dark:border-dbutton focus:outline-none transition-all duration-200 ease-in-out transform ${
+        className={`absolute right-0 z-30 mt-12 mr-4 w-64 text-xs bg-white dark:bg-dbg leading-5 rounded-lg shadow-lg border dark:border-dbutton focus:outline-none transition-all duration-200 ease-in-out transform ${
           isOpen ? "opacity-100 scale-100" : "opacity-0 hidden scale-95"
         }`}
       >
         <div className="p-3">
-          {menuItems.map((item) => {
+          {menuItems.map((item: any) => {
             return (
               <a
                 href={item.href}
@@ -76,11 +60,10 @@ export default function Example() {
         </div>
       </div>
       {settingsCardOpen && (
-    <div className="z-30">
-        <SettingsCard onClose={() => setSettingsCardOpen(false)} />
-    </div>
-)}
-
+        <div className="z-30">
+          <SettingsCard onClose={() => setSettingsCardOpen(false)} />
+        </div>
+      )}
     </>
   );
 }
