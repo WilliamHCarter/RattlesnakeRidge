@@ -5,7 +5,7 @@ import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
 import { startGame, ply, validateOption, loadGame, endGame } from "../API";
 
-function ResponseHandler() {
+function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<React.SetStateAction<boolean>> }) {
   const [conversation, setConversation] = useState<string[]>([]);
   const [styleArray, setStyleArray] = useState<TextStyles[]>([]);
   const [gameID, setGameID] = useState<string>("");
@@ -85,7 +85,7 @@ function ResponseHandler() {
         style={styleArray}
         onTypeState={handleTypeState}
         isFullscreen={isFullscreen}
-        toggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+        toggleFullscreen={() => {setIsFullscreen(!isFullscreen); setFullscreen(!isFullscreen)}}
       />
       <InputField
         onSend={handleUserInput}
