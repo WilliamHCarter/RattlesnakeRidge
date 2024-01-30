@@ -19,15 +19,16 @@ export default function Example() {
       label: "Github",
       href: "https://github.com/WilliamHCarter/RattlesnakeRidge",
       icon: Github,
+      onClick: () => {},
     },
-    {
-      label: "Settings",
-      icon: Settings,
-      onClick: () => {
-        setSettingsCardOpen(true);
-        setIsOpen(false);
-      },
-    },
+    // {
+    //   label: "Settings",
+    //   icon: Settings,
+    //   onClick: () => {
+    //     setSettingsCardOpen(true);
+    //     setIsOpen(false);
+    //   },
+    // },
   ];
 
   return (
@@ -43,7 +44,7 @@ export default function Example() {
       </button>
 
       <div
-        className={`absolute right-0 z-30 mt-10 w-64 text-xs bg-white dark:bg-dbg leading-5 rounded-lg shadow-lg border dark:border-dbutton focus:outline-none transition-all duration-200 ease-in-out transform ${
+        className={`absolute right-0 z-30 mt-12 mr-4 w-64 text-xs bg-white dark:bg-dbg leading-5 rounded-lg shadow-lg border dark:border-dbutton focus:outline-none transition-all duration-200 ease-in-out transform ${
           isOpen ? "opacity-100 scale-100" : "opacity-0 hidden scale-95"
         }`}
       >
