@@ -1,14 +1,10 @@
 import { useState } from "react";
-import { Settings, Github, Menu } from "lucide-react";
+import { Github, Menu } from "lucide-react";
 import SettingsCard from "./SettingsCard";
 
 export default function MobileMenu({ fullscreen }: { fullscreen: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [settingsCardOpen, setSettingsCardOpen] = useState(false); // Add state for settings card
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
 
   const menuItems: any = [
     {
@@ -16,14 +12,6 @@ export default function MobileMenu({ fullscreen }: { fullscreen: boolean }) {
       href: "https://github.com/WilliamHCarter/RattlesnakeRidge",
       icon: Github,
     },
-    // {
-    //   label: "Settings",
-    //   icon: Settings,
-    //   onClick: () => {
-    //     setSettingsCardOpen(true);
-    //     setIsOpen(false);
-    //   },
-    // },
   ];
 
   return (

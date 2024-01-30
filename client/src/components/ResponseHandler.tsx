@@ -96,7 +96,7 @@ function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<Reac
         isFullscreen={isFullscreen}
       />
     </div>
-  );  
+  );
 }
 
 export default ResponseHandler;

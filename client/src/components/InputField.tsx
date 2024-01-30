@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { SendHorizontal, Loader2 } from "lucide-react";
 
 type InputFieldProps = {

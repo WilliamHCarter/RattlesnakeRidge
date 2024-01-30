@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../index.css';
 function AsciiBanner({children}: {children: React.ReactNode }) {
   const asciiRef = useRef<HTMLDivElement>(null);

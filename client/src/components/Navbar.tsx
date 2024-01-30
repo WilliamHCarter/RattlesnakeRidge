@@ -1,5 +1,4 @@
 import MobileMenu from "./MobileMenu";
-//import SettingsButton from "./SettingsButton";
 import SourceButton from "./SourceButton";
 import ThemeButton from "./ThemeButton";
 
@@ -11,7 +10,6 @@ function Navbar({ fullscreen }: { fullscreen: boolean }) {
         <div className="tablet:flex hidden gap-4">
           <SourceButton />
           <ThemeButton />
-          {/*<SettingsButton />*/}
         </div>
         <div className="flex tablet:hidden gap-4">
           <ThemeButton />
