@@ -1,56 +1,7 @@
-from collections.abc import Callable
-from copy import copy
-from typing import Generator
-
-from server.agents.conversation import Agent, Conversation, LLM_t, LLMData, PlayerAgent
 from server.commands import *
-
-
-@dataclass(frozen=True)
-class GameData:
-    llm: LLM_t
-    actors: list[Agent]
-    player: PlayerAgent
-    prompts: dict[str, str]
-    setting_data: dict[str, str]
-
-
-UserInput_t = str | None
-SceneReturn_t = Generator[Command, UserInput_t, None]
-Scene_t = Callable[[GameData], SceneReturn_t]
-
-
-def make_conversation(
-    game_data: GameData,
-    order: list[Agent],
-    prompt_name: str = "single_person_conversation_complex",
-) -> Conversation:
-    llm_data = LLMData(
-        game_data.llm, game_data.prompts[prompt_name], game_data.setting_data
-    )
-    return Conversation(order, llm_data)
-
-
-def have_conversation(conversation: Conversation, max_player_messages: int):
-    responses_left = max_player_messages
-
-    responses = conversation.begin_conversation()
-
-    while responses_left > 0:
-        # Display all the responses
-        for i, r in enumerate(responses):
-            if r.conversation_ends:
-                responses_left = 0
-            msg = f"{r.agent}: {r.text}"
-            if i < len(responses) - 1 or responses_left == 0:
-                yield MessageDelayCommand(msg)
-            else:
-                # If this is the last response and the player has allowed messages,
-                # get input and get new responses
-                message = yield MessageCommand(msg)
-                responses = conversation.converse(message)
-
-        responses_left -= 1
+from copy import copy
+from server.agents.conversation import LLM_t, Conversation, Agent, LLMData, PlayerAgent
+from server.scenes.core import *
 
 
 def first_day_scene(game_data: GameData) -> SceneReturn_t:
@@ -244,6 +195,19 @@ make their escape, leaving you with the weight of your misjudgment.""",
 
     yield MessageDelayCommand("\n", delay_ms=3000)
     yield MessageDelayCommand("Thank you for playing Rattlesnake Ridge!")
+<<<<<<< HEAD:server/scenes.py
     yield SceneEndCommand(
         "Made with pride by Will Carter and Aidan McHugh", is_game_over=True
     )
+=======
+    yield SceneEndCommand("Made with pride by Will Carter and Aidan McHugh", is_game_over=True)
+
+
+SCENE_ORDER = [
+    first_day_scene,
+    first_night_scene,
+    second_day_morning_scene,
+    second_day_afternoon_scene,
+    final_confrontation_scene
+]
+>>>>>>> 814a151 (Reorganize scenes structure):server/scenes/rattlesnake_ridge.py
