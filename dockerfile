@@ -9,8 +9,12 @@ RUN apt-get update && \
     add-apt-repository -y ppa:certbot/certbot && \
     apt-get update && \
     apt-get install -y certbot python3-certbot-nginx
-    
-# Certbot renew
+
+# Add script to init certificates
+COPY init-letsencrypt.sh /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/init-letsencrypt.sh"]
+
+# Renew certificates twice a day
 RUN echo "0 */12 * * * certbot renew --pre-hook 'nginx -s stop' --post-hook 'nginx'" > /etc/cron.d/certbot-renew
 
 # Flask Container
