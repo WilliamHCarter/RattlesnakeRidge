@@ -2,7 +2,7 @@ name: Deploy Server to AWS
 
 on:
   push:
-    branches: ['main', 'server-deploy']
+    branches: ['main']
   workflow_dispatch:
 
 jobs:
