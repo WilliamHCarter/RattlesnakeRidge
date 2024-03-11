@@ -32,7 +32,7 @@ def check_and_reset_limit(self):
 if os.environ.get('FLASK_ENV') == 'development':
     origins = "http://localhost:5173"
 else:
-    origins = "https://stories.williamcarter.dev"
+    origins = "https://stories.williamcarter.dev, https://api.stories.williamcarter.dev"
 
 CORS(app, origins=[origins])
 

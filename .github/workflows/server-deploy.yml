@@ -25,7 +25,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push Docker image to Amazon ECR
+      - name: Obtain SSL/TLS Certificate
+        run: |
+          certbot --nginx -d api.stories.williamcarter.dev
+          nginx -s reload
+        env:
+          TERM: xterm 
+          
+      - name: Build, tag, and push Docker image to Amazon ECR Public
         run: |
           IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest"
           docker build -t $IMAGE_URI .
