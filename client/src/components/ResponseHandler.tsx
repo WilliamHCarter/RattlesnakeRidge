@@ -5,13 +5,14 @@ import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
 import { startGame, ply, validateOption, loadGame, endGame } from "../API";
 
-function ResponseHandler() {
+function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<React.SetStateAction<boolean>> }) {
   const [conversation, setConversation] = useState<string[]>([]);
   const [styleArray, setStyleArray] = useState<TextStyles[]>([]);
   const [gameID, setGameID] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [newGame, setNewGame] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
@@ -83,6 +84,8 @@ function ResponseHandler() {
         conversation={conversation}
         style={styleArray}
         onTypeState={handleTypeState}
+        isFullscreen={isFullscreen}
+        toggleFullscreen={() => {setIsFullscreen(!isFullscreen); setFullscreen(!isFullscreen)}}
       />
       <InputField
         onSend={handleUserInput}
@@ -90,6 +93,7 @@ function ResponseHandler() {
         disabled={isTyping}
         gameOver={gameOver}
         onRestart={restart}
+        isFullscreen={isFullscreen}
       />
     </div>
   );

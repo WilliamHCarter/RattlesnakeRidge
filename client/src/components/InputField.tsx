@@ -7,15 +7,10 @@ type InputFieldProps = {
   disabled?: boolean;
   gameOver?: boolean;
   onRestart?: () => void;
+  isFullscreen?: boolean;
 };
 
-function InputField({
-  onSend,
-  newGame,
-  disabled,
-  gameOver,
-  onRestart,
-}: InputFieldProps) {
+function InputField({ onSend, newGame, disabled, gameOver, onRestart, isFullscreen }: InputFieldProps) {
   const [input, setInput] = useState("");
 
   const handleSendClick = () => {
@@ -25,12 +20,37 @@ function InputField({
     }
   };
 
+  // Style adjustments for fullscreen mode
+  const fullscreenStyles: React.CSSProperties = isFullscreen ? {
+    backgroundColor: 'transparent',
+    color: '#16A34A',
+    border: '2px solid #16A34A',
+    position: 'absolute',
+    bottom: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '80%',
+    animation: 'borderWarp 0.15s infinite'
+  } : {};
+
+  const fullscreenButtonStyles: React.CSSProperties = isFullscreen ? {
+    backgroundColor: 'transparent',
+    color: '#16A34A',
+    border: '2px solid #16A34A',
+    position: 'absolute',
+    bottom: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    animation: 'textWarp 0.15s infinite, borderWarp 0.15s infinite'
+  } : {};
+
   if (newGame) {
     return (
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-6 z-0">
         <button
           onClick={onRestart}
           className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"
+          style={fullscreenButtonStyles}
         >
           Start Game
         </button>
@@ -43,9 +63,10 @@ function InputField({
       className={`flex justify-between gap-2 border dark:border-dbutton bg-white dark:bg-dbutton w-[85vw] pc:w-[60vw] self-center mt-10 shadow-ctr2xl rounded-xl ${
         disabled ? "bg-opacity-80" : ""
       }`}
+      style={fullscreenStyles}
     >
       <input
-        className="rounded-xl p-3 w-full bg-transparent focus:outline-none"
+        className={`rounded-xl p-3 w-full bg-transparent focus:outline-none ${isFullscreen ? 'placeholder-green-600 text-warp' : ''}`}
         placeholder={disabled ? "" : "Type your message..."}
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -70,6 +91,7 @@ function InputField({
       <button
         onClick={onRestart}
         className="bg-black dark:bg-dbutton text-white rounded-md py-2 px-5"
+        style={fullscreenButtonStyles}
       >
         Play Again
       </button>
