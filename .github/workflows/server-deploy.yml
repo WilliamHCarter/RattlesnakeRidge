@@ -25,11 +25,11 @@ jobs:
           echo ${{ secrets.AWS_SECRET_ACCESS_KEY }} | aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
 
       - name: Obtain SSL/TLS Certificate
-          run: |
-            certbot --nginx -d api.stories.williamcarter.dev
-            nginx -s reload
-          env:
-            TERM: xterm 
+        run: |
+          certbot --nginx -d api.stories.williamcarter.dev
+          nginx -s reload
+        env:
+          TERM: xterm 
 
       - name: Build, tag, and push Docker image to Amazon ECR Public
         run: |
