@@ -41,7 +41,7 @@ jobs:
         ECR_REPOSITORY: rattlesnakeridge-dockerized
         IMAGE_TAG: latest
       run: |
-        aws ssm send-command --instance-ids Ridge-Cluster-Instance --document-name "AWS-RunShellScript" --parameters '{"commands":["docker stop $(docker ps -aq --filter name=${{ env.CONTAINER_NAME }})", "docker rm $(docker ps -aq --filter name=${{ env.CONTAINER_NAME }})", "docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}", "docker run -d --name ${{ env.CONTAINER_NAME }} ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"]}'
+        aws ssm send-command --instance-ids ${{secrets.AWS_INSTANCE_ID}} --document-name "AWS-RunShellScript" --parameters '{"commands":["docker stop $(docker ps -aq --filter name=${{ env.CONTAINER_NAME }})", "docker rm $(docker ps -aq --filter name=${{ env.CONTAINER_NAME }})", "docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}", "docker run -d --name ${{ env.CONTAINER_NAME }} ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"]}'
 
     - name: Cleanup old images from ECR
       run: |
