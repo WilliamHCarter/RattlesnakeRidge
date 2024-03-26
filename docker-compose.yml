@@ -27,6 +27,8 @@ services:
       - nginx
     environment:
       - FLASK_ENV=production
+    image: flask:latest
+
 
 volumes:
   certbot-conf:
