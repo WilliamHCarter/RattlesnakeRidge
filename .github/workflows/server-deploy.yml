@@ -28,15 +28,14 @@ jobs:
     - name: Build, tag, and push Docker images to Amazon ECR Public
       env:
         ECR_REGISTRY: ${{ secrets.ECR_URI }}
-        ECR_REPOSITORY_FLASK: ${{ secrets.ECR_REPO_NAME_FLASK }}
-        ECR_REPOSITORY_NGINX: ${{ secrets.ECR_REPO_NAME_NGINX }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPO_NAME }}
         IMAGE_TAG: latest
       run: |
         docker-compose build
-        docker tag flask:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker tag nginx:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker tag flask $ECR_REGISTRY/$ECR_REPOSITORY:flask-$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:flask-$IMAGE_TAG
+        docker tag nginx $ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG
 
     - name: Update Docker container on EC2 instance
       env:
