@@ -46,15 +46,23 @@ function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<Reac
     setGameID(localStorage.getItem("game_id") || "");
   }, []);
 
-  useEffect( () => {
-    if (gameID && conversation.length === 0) {
-      const rsp = loadGame({ handleConversation, setGameID, handleUserInput });
-      if (!rsp) {
-        return;
+  useEffect(() => {
+    const loadSavedGame = async () => {
+      if (gameID && conversation.length === 0) {
+        try {
+          const rsp = await loadGame({ handleConversation, setGameID, handleUserInput });
+          if (rsp === false) {
+            return;
+          }
+          setNewGame(false);
+        } catch (error) {
+          console.error("Error loading game:", error);
+        }
       }
-      setNewGame(false);
-    }
-  }, [gameID]);
+    };
+
+    loadSavedGame();
+  }, [gameID, conversation.length]);
 
   const handleUserInput = async (userInput: string) => {
     if (validateOption(lastMessage, userInput, handleConversation)) return;

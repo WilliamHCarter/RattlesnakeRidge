@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Github, Menu } from "lucide-react";
 import SettingsCard from "./SettingsCard";
 
-export default function MobileMenu({ fullscreen }: { fullscreen: boolean }) {
+export default function MobileMenu({ fullscreen }: { readonly fullscreen: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [settingsCardOpen, setSettingsCardOpen] = useState(false); // Add state for settings card
 

@@ -93,7 +93,7 @@ function CrtScreen({
           }}
         ></div>
         <div
-          className=" text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto overflow-x-hidden"
+          className={` text-green-600 text-warp text-xs tablet:text-base font-mono p-8 z-10 overflow-auto overflow-x-hidden ${isFullscreen && "mb-20"}`}
           ref={scrollRef}
         >
           <AsciiBanner>
