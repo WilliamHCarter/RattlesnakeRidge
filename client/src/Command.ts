@@ -58,24 +58,22 @@ export function extractTextStyles(Command: BaseCommand): TextStyles {
   switch (Command.type) {
     case "MessageCommand":
       const msgCommand = Command as GenericMessageCommand;
-      var style = new TextStyles(
+      return new TextStyles(
         msgCommand.message,
         msgCommand.do_type_message,
         msgCommand.character_delay_ms
       );
-      return style;
 
     case "SelectOptionCommand":
       return new TextStyles("Unstyled Option");
 
     case "MessageDelayCommand":
       const msgDelay = Command as MessageDelayCommand;
-      var style = new TextStyles(
+      return new TextStyles(
         msgDelay.message,
         msgDelay.do_type_message,
         msgDelay.character_delay_ms
       );
-      return style;
 
     case "SoundDelayCommand":
       //const soundDelay = Command as SoundDelay;
