@@ -46,36 +46,36 @@ const fetchGame = (endpoint: string, gameID: string, userIn: string = "") => {
     });
 };
 
-export const loadGame = async (props: SGProps) => {
+export const loadGame = async (props: SGProps): Promise<boolean> => {
   console.debug("Loading game...");
   const gameID = getGameID();
   console.debug("Game ID: " + gameID);
   props.setGameID(gameID);
 
-  fetchGame("/load/", gameID).then(async (response) => {
-    if (!response.ok) {
-      console.debug("Error loading game.");
-      const errorStyle = new TextStyles();
-      const errorMessage = "Unable to load game. Please try again later.";
-      props.handleConversation([errorMessage], [errorStyle]);
-      localStorage.removeItem("game_id");
-      return false;
-    } else {
-      console.debug("Game loaded successfully.");
-      const data = await response.json();
-      data.response.forEach((response: any) => {
-        let { uText, uStyles } = processResponse(response);
-        uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
-        props.handleConversation(uText, uStyles);
-      });
-      if (data.length && !data[data.length - 1].expects_user_input) {
-        props.handleUserInput("");
-      }
+  const response = await fetchGame("/load/", gameID);
+  if (!response.ok) {
+    console.debug("Error loading game.");
+    const errorStyle = new TextStyles();
+    const errorMessage = "Unable to load game. Please try again later.";
+    props.handleConversation([errorMessage], [errorStyle]);
+    localStorage.removeItem("game_id");
+    return false;
+  } else {
+    console.debug("Game loaded successfully.");
+    const data = await response.json();
+    data.response.forEach((response: any) => {
+      let { uText, uStyles } = processResponse(response);
+      uStyles = uStyles.map((style) => ({ ...style, characterDelayMs: 0 }));
+      props.handleConversation(uText, uStyles);
+    });
+    if (data.length && !data[data.length - 1].expects_user_input) {
+      props.handleUserInput("");
     }
-  });
+    return true;
+  }
 };
 
-export const startGame = (props: SGProps) => {
+export const startGame = (props: SGProps): Promise<void> => {
   return fetch(`${BASE_URL}/start`)
     .then((response) => response.json())
     .then((data) => {
@@ -102,6 +102,7 @@ export const endGame = async () => {
 
 export async function ply(userInput: string, handleConversation: Function) {
   const gameID = getGameID();
+  console.log("BASE_URL: ", BASE_URL);
   const response = await fetchGame("/play/", gameID, userInput);
   if (response.ok) {
     const data = await response.json();
