@@ -25,29 +25,30 @@ To get started with this project, follow these steps:
 ### 2. Install dependencies:
 
   **Python**
-   
+
    Make sure you have Python installed. If not, you can download and install Python from [python.org](https://www.python.org/downloads/).
 
-   It's recommended to use a virtual environment to keep your project dependencies isolated:
-
+   This project uses pyproject.toml for dependency management. You can manage dependencies using either [uv](https://docs.astral.sh/uv/) (recommended) or pip:
    ```bash
-   # Create a virtual environment
-   python -m venv venv
+   # Using standard pip
+   python -m venv .venv
+   source .venv/bin/activate  # On Unix/macOS
+   # .venv\Scripts\activate   # On Windows
+   pip install .
 
-   # Activate the virtual environment
-   # For Windows:
-   venv\Scripts\activate
-
-   # For MacOS and Linux:
-   source venv/bin/activate
+   # OR using uv
+   uv venv
+   source .venv/bin/activate  # On Unix/macOS
+   # .venv\Scripts\activate   # On Windows
+   uv pip install --requirement uv.lock
    ```
 
    **Docker**
-   
+
    This project is containerized using Docker. Make sure you have Docker installed. If not, you can download and install Docker from [Docker's official website.](https://www.docker.com/)
 
    **Node & NPM**
-   
+
    This project uses NPM for its frontend dependency installation. Make sure you have node installed. If not, you can download and install Node.js from [nodejs.org](https://nodejs.org/). npm is included with the Node.js installation.
 
 ### 3. Add API Key:
