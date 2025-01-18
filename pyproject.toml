@@ -1,0 +1,13 @@
+[project]
+name = "rattlesnakeridge"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.0",
+    "flask-cors>=5.0.0",
+    "flask-limiter>=3.10.1",
+    "flask-session>=0.8.0",
+    "langchain>=0.3.14",
+]
