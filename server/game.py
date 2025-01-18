@@ -1,8 +1,15 @@
-from server.scenes import *
-from server.commands import Command, SceneEndCommand, MessageCommand, SelectOptionCommand
-from server.agents.conversation import LLM_t, PlayerAgent, Agent
-import yaml
 import logging
+
+import yaml
+
+from server.agents.conversation import Agent, LLM_t, PlayerAgent
+from server.commands import (
+    Command,
+    MessageCommand,
+    SceneEndCommand,
+    SelectOptionCommand,
+)
+from server.scenes import *
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +20,9 @@ class Session:
         first_night_scene,
         second_day_morning_scene,
         second_day_afternoon_scene,
-        final_confrontation_scene
+        final_confrontation_scene,
     ]
-    last_scene_output : Command | None = None
+    last_scene_output: Command | None = None
 
     def __init__(self, llm: LLM_t, prompts, setting, actors):
         self.llm = llm
@@ -35,11 +42,11 @@ class Session:
             actors=self.actors,
             prompts=self.prompts,
             player=self.player,
-            setting_data=self.setting
+            setting_data=self.setting,
         )
 
     def start_next_scene(self) -> bool:
-        if len(self.scene_stack) == 0: 
+        if len(self.scene_stack) == 0:
             self.current_scene = None
             return False
         next_scene = self.scene_stack[0]
@@ -57,11 +64,17 @@ class Session:
 
         if not self.scene_started:
             if user_input is not None:
-                logger.warn("got user input \"%s\" at the beginning of a scene. Expected `None` input.", user_input)
+                logger.warn(
+                    'got user input "%s" at the beginning of a scene. Expected `None` input.',
+                    user_input,
+                )
             try:
                 resp = next(self.current_scene)
             except Exception as error:
-                logger.error("failed to get the next command from current scene. error: %s", error)
+                logger.error(
+                    "failed to get the next command from current scene. error: %s",
+                    error,
+                )
                 self.gameover = True
                 raise error
             self.scene_started = True
@@ -69,14 +82,17 @@ class Session:
             try:
                 resp = self.current_scene.send(user_input)
             except Exception as error:
-                logger.error("failed to get the next command from current scene. error: %s", error)
+                logger.error(
+                    "failed to get the next command from current scene. error: %s",
+                    error,
+                )
                 self.gameover = True
                 raise error
 
         if isinstance(resp, SceneEndCommand):
             self.start_next_scene()
 
-        if resp.is_game_over: 
+        if resp.is_game_over:
             logger.info("game has ended")
             self.gameover = True
 
@@ -88,7 +104,8 @@ class Session:
 
     def is_input_valid(self, user_input: UserInput_t) -> bool:
         """Check that the user input is valid given the last command sent."""
-        if self.last_scene_output is None: return True
+        if self.last_scene_output is None:
+            return True
         match self.last_scene_output:
             case MessageCommand():
                 # Any message is good
@@ -118,12 +135,7 @@ def initialize_game(llm: LLM_t = None) -> Session:
     ]
 
     logger.info("Initialized a new game")
-    return Session(
-        llm=llm,
-        prompts=prompts,
-        setting=setting,
-        actors=actors
-    )
+    return Session(llm=llm, prompts=prompts, setting=setting, actors=actors)
 
 
 def play_game(session: Session, user_input: str) -> Command:

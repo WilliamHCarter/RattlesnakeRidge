@@ -1,9 +1,8 @@
+import logging
 from time import sleep
 
-from server.game import initialize_game, play_game
 from server.commands import *
-
-import logging
+from server.game import initialize_game, play_game
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -11,7 +10,9 @@ logger.setLevel(logging.INFO)
 # Create a console logger
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
-ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+ch.setFormatter(
+    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
 logger.addHandler(ch)
 
 
@@ -24,11 +25,11 @@ def text_input() -> str:
 
 
 def print_rich(command: Command):
-    assert(isinstance(command, GenericMessageCommand))
+    assert isinstance(command, GenericMessageCommand)
     if command.do_type_message:
         delay = command.character_delay_ms / 1000.0
         for c in command.message:
-            print(c, end='', flush=True)
+            print(c, end="", flush=True)
             sleep(delay)
         print()
     else:
@@ -40,7 +41,7 @@ def local_implementation(incoming_command) -> None | str:
         case SceneEndCommand():
             print_rich(incoming_command)
             sleep(1)
-            print("\n\n", end='')
+            print("\n\n", end="")
             return None
         case MessageCommand():
             print_rich(incoming_command)
@@ -51,7 +52,7 @@ def local_implementation(incoming_command) -> None | str:
             return None
         case SelectOptionCommand():
             print_rich(incoming_command)
-            for (choice, details) in incoming_command.options:
+            for choice, details in incoming_command.options:
                 print(f" - {choice}: {details}")
             inp = text_input()
             while inp not in incoming_command.choices:
@@ -59,13 +60,14 @@ def local_implementation(incoming_command) -> None | str:
                 inp = text_input()
             return inp
         case SoundDelayCommand():
-            print(f'~!#&^#%)~~ {incoming_command.sound_name} ~~(%&!&*@#!')
+            print(f"~!#&^#%)~~ {incoming_command.sound_name} ~~(%&!&*@#!")
             sleep(incoming_command.delay_ms / 1000)
             return None
 
 
 if __name__ == "__main__":
     from langchain.chat_models import FakeListChatModel
+
     llm = FakeListChatModel(
         verbose=True,
         responses=[
