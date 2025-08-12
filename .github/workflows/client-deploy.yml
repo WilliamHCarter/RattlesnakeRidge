@@ -1,16 +1,12 @@
 name: Deploy Client UI to Github Pages
-
 on:
   push:
-    branches: ['main']
-
+    branches: ["main"]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 jobs:
   deploy:
     environment:
@@ -20,38 +16,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: 'client/package-lock.json'
-
+          cache: "npm"
+          cache-dependency-path: "client/package-lock.json"
       - name: Install dependencies
         run: npm install
         working-directory: ./client
-
       - name: Create .env file
         run: |
           echo "VITE_API_ADDRESS=${{ secrets.VITE_API_ADDRESS }}" > ./client/.env
         shell: bash
-        
+
       - name: Build
         run: npm run build
         working-directory: ./client
-
       - name: Create CNAME file
         run: echo 'stories.williamcarter.dev' > ./client/dist/CNAME
-
       - name: Setup Pages
-        uses: actions/configure-pages@v3
-
+        uses: actions/configure-pages@v5
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: './client/dist'
-
+          path: "./client/dist"
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
