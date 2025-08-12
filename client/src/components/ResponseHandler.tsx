@@ -5,7 +5,11 @@ import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
 import { startGame, ply, validateOption, loadGame, endGame } from "../API";
 
-function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<React.SetStateAction<boolean>> }) {
+function ResponseHandler({
+  setFullscreen,
+}: {
+  setFullscreen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [conversation, setConversation] = useState<string[]>([]);
   const [styleArray, setStyleArray] = useState<TextStyles[]>([]);
   const [gameID, setGameID] = useState<string>("");
@@ -50,36 +54,30 @@ function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<Reac
     const loadSavedGame = async () => {
       if (gameID && conversation.length === 0) {
         try {
-          const rsp = await loadGame({ handleConversation, setGameID, handleUserInput });
-          if (rsp === false) {
-            return;
-          }
+          await loadGame({ handleConversation, setGameID, handleUserInput });
           setNewGame(false);
         } catch (error) {
           console.error("Error loading game:", error);
+          return;
         }
       }
     };
-
     loadSavedGame();
   }, [gameID, conversation.length]);
 
   const handleUserInput = async (userInput: string) => {
     if (validateOption(lastMessage, userInput, handleConversation)) return;
-
     const data = await ply(userInput, handleConversation);
     const cmd = data?.command;
-
     setLastMessage(
       cmd?.type == "SelectOptionCommand"
         ? (cmd as SelectOptionCommand)
-        : undefined
+        : undefined,
     );
-
     if (cmd && !cmd.expects_user_input && !cmd.is_game_over) {
       handleUserInput("");
     }
-    
+
     if (cmd?.is_game_over) {
       setGameOver(true);
       endGame();
@@ -93,7 +91,10 @@ function ResponseHandler({ setFullscreen }: { setFullscreen: React.Dispatch<Reac
         style={styleArray}
         onTypeState={handleTypeState}
         isFullscreen={isFullscreen}
-        toggleFullscreen={() => {setIsFullscreen(!isFullscreen); setFullscreen(!isFullscreen)}}
+        toggleFullscreen={() => {
+          setIsFullscreen(!isFullscreen);
+          setFullscreen(!isFullscreen);
+        }}
       />
       <InputField
         onSend={handleUserInput}
