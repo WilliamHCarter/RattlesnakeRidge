@@ -2,11 +2,22 @@ import { useState } from "react";
 import { Github, Menu } from "lucide-react";
 import SettingsCard from "./SettingsCard";
 
-export default function MobileMenu({ fullscreen }: { readonly fullscreen: boolean }) {
+interface MenuItem {
+  label: string;
+  href?: string;
+  icon: React.ElementType;
+  onClick?: () => void;
+}
+
+export default function MobileMenu({
+  fullscreen,
+}: {
+  readonly fullscreen: boolean;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [settingsCardOpen, setSettingsCardOpen] = useState(false); // Add state for settings card
 
-  const menuItems: any = [
+  const menuItems: MenuItem[] = [
     {
       label: "Github",
       href: "https://github.com/WilliamHCarter/RattlesnakeRidge",
@@ -32,7 +43,7 @@ export default function MobileMenu({ fullscreen }: { readonly fullscreen: boolea
         }`}
       >
         <div className="p-3">
-          {menuItems.map((item: any) => {
+          {menuItems.map((item: MenuItem) => {
             return (
               <a
                 href={item.href}
