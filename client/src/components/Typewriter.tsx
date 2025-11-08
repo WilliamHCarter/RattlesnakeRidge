@@ -32,13 +32,27 @@ const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate, 
     if (messageIndex < conversation.length) {
       onTypeState(true); // Typing starts
       const currentStyle = style[messageIndex] ?? new TextStyles();
+
+      // If doTypeMessage is false, display the entire message immediately
+      if (!currentStyle.doTypeMessage) {
+        const fullMessage = conversation[messageIndex];
+        setCurrentMessage(fullMessage);
+        onMessageUpdate(fullMessage);
+        // Move to next message immediately
+        setCurrentMessage('');
+        setMessageIndex((prev) => prev + 1);
+        setCharIndex(0);
+        return;
+      }
+
+      // Otherwise, type character by character
       if (charIndex < conversation[messageIndex].length) {
         const timeoutId = setTimeout(() => {
           const newMessage = currentMessage + conversation[messageIndex][charIndex];
           setCurrentMessage(newMessage);
-          onMessageUpdate(newMessage);  
+          onMessageUpdate(newMessage);
           setCharIndex((prev) => prev + 1);
-        }, currentStyle.characterDelayMs); 
+        }, currentStyle.characterDelayMs);
 
         return () => clearTimeout(timeoutId);
       } else {
@@ -49,7 +63,7 @@ const Typewriter: React.FC<TypewriterProps> = ({ conversation, onMessageUpdate, 
     } else {
       onTypeState(false); // Typing ends
     }
-  }, [messageIndex, charIndex, conversation, currentMessage, onMessageUpdate, onTypeState]);  
+  }, [messageIndex, charIndex, conversation, currentMessage, onMessageUpdate, onTypeState]);
 
   return (
     <div>

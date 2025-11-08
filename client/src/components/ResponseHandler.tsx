@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import InputField from "./InputField";
 import CrtScreen from "./CrtScreen";
 import { TextStyles } from "./Typewriter";
 import { SelectOptionCommand } from "../Command";
 import { startGame, ply, validateOption, loadGame, endGame } from "../API";
+import { RequestQueue } from "../RequestQueue";
 
 function ResponseHandler({
   setFullscreen,
@@ -20,6 +21,9 @@ function ResponseHandler({
   const [lastMessage, setLastMessage] = useState<
     SelectOptionCommand | undefined
   >(undefined);
+
+  // Request queue to prevent concurrent backend calls
+  const requestQueue = useRef(new RequestQueue());
 
   const handleConversation = (message: string[], style: TextStyles[]) => {
     setConversation((prev) => [...prev, ...message]);
@@ -66,22 +70,32 @@ function ResponseHandler({
   }, [gameID, conversation.length]);
 
   const handleUserInput = async (userInput: string) => {
+    // Validate input first (doesn't need to be queued)
     if (validateOption(lastMessage, userInput, handleConversation)) return;
-    const data = await ply(userInput, handleConversation);
-    const cmd = data?.command;
-    setLastMessage(
-      cmd?.type == "SelectOptionCommand"
-        ? (cmd as SelectOptionCommand)
-        : undefined,
-    );
-    if (cmd && !cmd.expects_user_input && !cmd.is_game_over) {
-      handleUserInput("");
-    }
 
-    if (cmd?.is_game_over) {
-      setGameOver(true);
-      endGame();
-    }
+    // Queue the request to prevent concurrent backend calls
+    await requestQueue.current.enqueue(async () => {
+      const data = await ply(userInput, handleConversation);
+      const cmd = data?.command;
+
+      setLastMessage(
+        cmd?.type == "SelectOptionCommand"
+          ? (cmd as SelectOptionCommand)
+          : undefined,
+      );
+
+      if (cmd?.is_game_over) {
+        setGameOver(true);
+        endGame();
+        return;
+      }
+
+      // Auto-send for commands that don't expect user input
+      // This will be queued after the current request completes
+      if (cmd && !cmd.expects_user_input && !cmd.is_game_over) {
+        handleUserInput("");
+      }
+    });
   };
 
   return (
