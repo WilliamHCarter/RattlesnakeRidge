@@ -1,3 +1,8 @@
+import server.scenes.rattlesnake_ridge
+from server.scenes.core import Scene_t, UserInput_t, GameData
+from server.commands import Command, SceneEndCommand, MessageCommand, SelectOptionCommand, marshal_command
+from server.agents.conversation import LLM_t, PlayerAgent, Agent
+import yaml
 import logging
 
 import yaml
@@ -15,14 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class Session:
-    scene_stack: list[Scene_t] = [
-        first_day_scene,
-        first_night_scene,
-        second_day_morning_scene,
-        second_day_afternoon_scene,
-        final_confrontation_scene,
-    ]
-    last_scene_output: Command | None = None
+    scene_stack: list[Scene_t] = server.scenes.rattlesnake_ridge.SCENE_ORDER
+    last_scene_output : Command | None = None
 
     def __init__(self, llm: LLM_t, prompts, setting, actors):
         self.llm = llm
