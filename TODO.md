@@ -5,7 +5,7 @@ Branch: `v2`
 What do we want to do?
 - [ ] Aidan wants it to work
 - [ ] Aidan also wants to fine-tune it after it works so it works _even better_
-- [ ] Will wants to dick around with `Back end` ;)
+- [ ] Will actually thinks he should make objects and situations randomizable
 
 What are we doing today?
 - [ ] Hook up to ollama
