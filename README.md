@@ -47,6 +47,8 @@ To get started with this project, follow these steps:
 
    This project is containerized using Docker. Make sure you have Docker installed. If not, you can download and install Docker from [Docker's official website.](https://www.docker.com/)
 
+   This no longer works as it needs a local Ollama server connected :)
+
    **Node & NPM**
 
    This project uses NPM for its frontend dependency installation. Make sure you have node installed. If not, you can download and install Node.js from [nodejs.org](https://nodejs.org/). npm is included with the Node.js installation.
@@ -79,3 +81,13 @@ To get started with this project, follow these steps:
    npm run dev
    ```
    This will open up a new UI instance at [http://localhost:5173](http://localhost:5173/) which you can use to interact with the app.
+
+### 6. Run Ollama Server
+
+   ```
+   brew install ollama
+   ollama serve
+   ollama pull granite3.1-dense:8b
+   ```
+
+   Now, local inference with Ollama should work. TPS should be fast enough that it is noticable, but not overly annoying.
