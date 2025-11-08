@@ -2,6 +2,7 @@ import logging
 import uuid
 
 from flask import jsonify, request
+from langchain.chat_models.openai import ChatOpenAI
 
 from server import AI_API_LIMIT, AI_API_USAGE, app, game_states, logger
 from server.commands import marshal_command
@@ -17,16 +18,24 @@ def start_game():
 
     # Create the llm to use for this game
     # todo:: get the user's provided API key ;)
-    from langchain.chat_models import FakeListChatModel
 
-    llm = FakeListChatModel(
-        verbose=True,
-        responses=[
-            "Hi there, I'm talking to you.",
-            "This is a response",
-            "I say something else too!",
-            "Ok, goodbye now!",
-        ],
+    # llm = FakeListChatModel(
+    #     verbose=True,
+    #     responses=[
+    #         "Hi there, I'm talking to you.",
+    #         "This is a response",
+    #         "I say something else too!",
+    #         "Ok, goodbye now!",
+    #     ],
+    # )
+
+    # Use a local Ollama server
+    MODEL = "granite3.1-dense:8b"
+    llm = ChatOpenAI(
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",
+        model_name=MODEL,
+        model_kwargs={"stop": ["\n"]},
     )
 
     # Initializing the game state

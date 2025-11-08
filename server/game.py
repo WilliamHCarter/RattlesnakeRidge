@@ -1,27 +1,25 @@
-import server.scenes.rattlesnake_ridge
-from server.scenes.core import Scene_t, UserInput_t, GameData
-from server.commands import Command, SceneEndCommand, MessageCommand, SelectOptionCommand, marshal_command
-from server.agents.conversation import LLM_t, PlayerAgent, Agent
-import yaml
 import logging
 
 import yaml
 
+import server.scenes.rattlesnake_ridge
 from server.agents.conversation import Agent, LLM_t, PlayerAgent
 from server.commands import (
     Command,
     MessageCommand,
     SceneEndCommand,
     SelectOptionCommand,
+    marshal_command,
 )
 from server.scenes import *
+from server.scenes.core import GameData, Scene_t, UserInput_t
 
 logger = logging.getLogger(__name__)
 
 
 class Session:
     scene_stack: list[Scene_t] = server.scenes.rattlesnake_ridge.SCENE_ORDER
-    last_scene_output : Command | None = None
+    last_scene_output: Command | None = None
 
     def __init__(self, llm: LLM_t, prompts, setting, actors):
         self.llm = llm
@@ -62,7 +60,7 @@ class Session:
             return SceneEndCommand("The game is over.", is_game_over=True)
 
         if not self.scene_started:
-            if user_input is not None:
+            if user_input is not None and user_input != "":
                 logger.warn(
                     'got user input "%s" at the beginning of a scene. Expected `None` input.',
                     user_input,

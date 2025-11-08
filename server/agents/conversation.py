@@ -1,11 +1,14 @@
+import logging
+import re
 from dataclasses import dataclass
+
+from langchain.callbacks import get_openai_callback
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI, FakeListChatModel
 from langchain.prompts import PromptTemplate
 from langchain.schema.messages import ChatMessage
-from langchain.callbacks import get_openai_callback
+
 from server.agents.agent import Agent, PlayerAgent
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +57,13 @@ class Conversation:
                 self.conversations.append("player")
 
     def __parse_response(self, agent: Agent, text: str) -> ConversationResponse:
+        # Remove thinking tags (e.g., <think>...</think> or <thinking>...</thinking>)
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+        text = text.strip()
+
+        # Remove the leading "{name}:"
+        text = text.lstrip(agent.name + ":")
+
         # If the text starts with "[QUIT]", the conversation
         # is over and that command should be stripped.
         terminate_prefix = "[QUIT]"
@@ -84,9 +94,11 @@ class Conversation:
             self.cycle_agents()
 
         while not isinstance(self.agents[0], PlayerAgent):
-            res, mes = self.__talk(self.agents[0], self.conversations[0], carried_message)
+            res, mes = self.__talk(
+                self.agents[0], self.conversations[0], carried_message
+            )
             responses.append(res)
-            
+
             for a in self.agents:
                 a._memory.chat_memory.add_message(mes)
 
@@ -94,7 +106,6 @@ class Conversation:
             carried_message = res.text
 
         return responses
-
 
     def speak_directly(self, message: str, agent: Agent) -> list[ConversationResponse]:
         if agent not in self.agents:
@@ -118,11 +129,18 @@ class Conversation:
 
         with get_openai_callback() as cb:
             raw_response = conversation({"message": message})
-            res: ConversationResponse = self.__parse_response(agent, raw_response["text"])
+            res: ConversationResponse = self.__parse_response(
+                agent, raw_response["text"]
+            )
             # Avoid logging if both values are zero. This likely means we aren't using an OpenAI model
             # at this time.
             if cb.prompt_tokens != 0 or cb.completion_tokens != 0:
-                logger.info("invoked llm. prompt tokens=%d ; completion tokens=%d ; cost=%f", cb.prompt_tokens, cb.completion_tokens, cb.total_cost)
+                logger.info(
+                    "invoked llm. prompt tokens=%d ; completion tokens=%d ; cost=%f",
+                    cb.prompt_tokens,
+                    cb.completion_tokens,
+                    cb.total_cost,
+                )
 
         # We need to remove and rename the AIMessage that gets added automatically
         # and re-add it as a ChatMessage with the correct label
