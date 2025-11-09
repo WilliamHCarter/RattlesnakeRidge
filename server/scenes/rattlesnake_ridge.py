@@ -1,13 +1,14 @@
-from server.commands import *
 from copy import copy
+
 from server.agents.conversation import Agent
+from server.commands import *
 from server.scenes.core import *
 
 
 def first_day_scene(game_data: GameData) -> SceneReturn_t:
     yield MessageDelayCommand("""As the sun sets on the horizon, you ride into the dusty outpost \
 of Rattlesnake Ridge. The villagers are gathered around the town \
-center, murmuring about a heinous crime: a local prospector named Jeb, \
+center, murmuring about a heinous crime: a local prospector named Rusty McKenna, \
 known for recently striking gold, has been found dead. Word is that \
 his stash of gold is missing too. You decide to step in, and after \
 introducing yourself, you have the option to speak to the main \

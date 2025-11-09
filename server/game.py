@@ -57,6 +57,7 @@ class Session:
         return self.gameover
 
     def play(self, user_input: str | None) -> Command:
+        logger.info(f"*** SESSION.PLAY CALLED *** user_input='{user_input}', scene_started={self.scene_started}")
         if self.is_gameover():
             logger.warn("User attempted to play a game that has finished")
             return SceneEndCommand("The game is over.", is_game_over=True)
@@ -69,7 +70,9 @@ class Session:
                 )
             try:
                 assert self.current_scene is not None
+                logger.info(f"*** SESSION.PLAY: GETTING FIRST COMMAND FROM SCENE ***")
                 resp = next(self.current_scene)
+                logger.info(f"*** SESSION.PLAY: GOT FIRST COMMAND: {type(resp).__name__} ***")
             except Exception as error:
                 logger.error(
                     "failed to get the next command from current scene. error: %s",
@@ -81,7 +84,9 @@ class Session:
         else:
             try:
                 assert self.current_scene is not None
+                logger.info(f"*** SESSION.PLAY: SENDING USER INPUT TO SCENE: '{user_input}' ***")
                 resp = self.current_scene.send(user_input)
+                logger.info(f"*** SESSION.PLAY: GOT RESPONSE COMMAND: {type(resp).__name__} ***")
             except Exception as error:
                 logger.error(
                     "failed to get the next command from current scene. error: %s",
@@ -140,4 +145,7 @@ def initialize_game(llm: LLM_t) -> Session:
 
 
 def play_game(session: Session, user_input: str | None) -> Command:
-    return session.play(user_input)
+    logger.info(f"*** PLAY_GAME CALLED *** user_input='{user_input}'")
+    result = session.play(user_input)
+    logger.info(f"*** PLAY_GAME RETURNING {type(result).__name__} ***")
+    return result

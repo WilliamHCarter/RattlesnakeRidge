@@ -126,6 +126,76 @@ const processResponse = (data: any, userInput: string = "") => {
   return { uText, uStyles, command, styles };
 };
 
+export const streamResponse = async (
+  streamId: string,
+  agentName: string,
+  onChunk: (chunk: string) => void,
+  onComplete: (fullText: string) => void,
+  onError: (error: string) => void
+): Promise<void> => {
+  const gameID = getGameID();
+  const url = `${BASE_URL}/stream/${gameID}/${streamId}`;
+
+  console.log(`streamResponse: starting SSE connection for ${agentName}, streamId=${streamId}`);
+  console.log(`streamResponse: URL=${url}`);
+
+  return new Promise((resolve, reject) => {
+    const eventSource = new EventSource(url);
+    let fullText = "";
+    let tokenCount = 0;
+
+    console.log(`streamResponse: EventSource created`);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log(`streamResponse: received SSE message:`, data);
+
+        if (data.type === "token") {
+          tokenCount++;
+          fullText += data.token;
+          console.log(`streamResponse: token #${tokenCount}: '${data.token}'`);
+          onChunk(data.token);
+        } else if (data.type === "done") {
+          console.log(`streamResponse: streaming completed, ${tokenCount} tokens total`);
+          console.log(`streamResponse: full text: '${data.full_text}'`);
+          fullText = data.full_text;
+          eventSource.close();
+          onComplete(fullText);
+          resolve();
+        } else if (data.type === "error") {
+          console.error(`streamResponse: streaming error: ${data.message}`);
+          eventSource.close();
+          onError(data.message);
+          reject(new Error(data.message));
+        }
+      } catch (error) {
+        console.error("streamResponse: Error parsing SSE data:", error);
+        console.error("streamResponse: Raw event data:", event.data);
+        eventSource.close();
+        onError("Failed to parse streaming data");
+        reject(error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("SSE connection error:", error);
+      eventSource.close();
+      onError("Connection error during streaming");
+      reject(error);
+    };
+
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      if (eventSource.readyState !== EventSource.CLOSED) {
+        eventSource.close();
+        onError("Streaming timeout");
+        reject(new Error("Streaming timeout"));
+      }
+    }, 30000);
+  });
+};
+
 export const validateOption = (
   lastMessage: any,
   userInput: string,

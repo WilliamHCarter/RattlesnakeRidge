@@ -7,7 +7,14 @@ from flask import Flask
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
 from flask_session import Session
+
+# Configure logging to show all debug messages
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +27,11 @@ app.config["SESSION_TYPE"] = "filesystem"
 # Global in-memory game state storage for active sessions
 game_states = {}
 ai_api_usage: int = 0
-AI_API_LIMIT: int = 30
+AI_API_LIMIT: int = 200
 last_reset_date = datetime.now().date()  # Initialize with the current date
+
+# Streaming support
+pending_streams: dict[str, any] = {}  # stream_id -> generator
 
 
 def check_and_reset_limit(self):

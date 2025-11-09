@@ -7,6 +7,7 @@ export enum RespType {
   Option = "SelectOptionCommand",
   MessageDelay = "MessageDelayCommand",
   SoundDelay = "SoundDelayCommand",
+  Streaming = "StreamingMessageCommand",
 }
 
 export interface BaseCommand {
@@ -35,7 +36,12 @@ export interface SoundDelayCommand extends BaseCommand {
   sound_name: string;
 }
 
-export function castCommand(Command: any): MessageCommand | SelectOptionCommand | MessageDelayCommand | SoundDelayCommand {
+export interface StreamingMessageCommand extends GenericMessageCommand {
+  stream_id: string;
+  agent_name: string;
+}
+
+export function castCommand(Command: any): MessageCommand | SelectOptionCommand | MessageDelayCommand | SoundDelayCommand | StreamingMessageCommand {
   switch (Command.type) {
     case "MessageCommand":
       return Command as MessageCommand;
@@ -45,6 +51,8 @@ export function castCommand(Command: any): MessageCommand | SelectOptionCommand 
       return Command as MessageDelayCommand;
     case "SoundDelayCommand":
       return Command as SoundDelayCommand;
+    case "StreamingMessageCommand":
+      return Command as StreamingMessageCommand;
     case "SceneEndCommand":
       Command.type= "MessageCommand";
       return Command as MessageCommand;
@@ -75,6 +83,14 @@ export function extractTextStyles(Command: BaseCommand): TextStyles {
         msgDelay.character_delay_ms
       );
 
+    case "StreamingMessageCommand":
+      const streamCmd = Command as StreamingMessageCommand;
+      return new TextStyles(
+        streamCmd.message,
+        false,  // Streaming shows in real-time, no typing effect
+        0
+      );
+
     case "SoundDelayCommand":
       //const soundDelay = Command as SoundDelay;
       return new TextStyles();
@@ -99,6 +115,11 @@ export function extractTextContent(Command: BaseCommand): string[] {
     case "MessageDelayCommand":
       const msgDelay = Command as MessageDelayCommand;
       return [msgDelay.message];
+
+    case "StreamingMessageCommand":
+      const streamingCmd = Command as StreamingMessageCommand;
+      // Return placeholder; real text will come from streaming
+      return [`${streamingCmd.agent_name}: `];
 
     case "SoundDelayCommand":
       //const soundDelay = Command as SoundDelay;

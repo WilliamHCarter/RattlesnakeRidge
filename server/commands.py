@@ -21,7 +21,7 @@ class GenericMessageCommand(Command):
     _: KW_ONLY
     # Options for t-y-p-i-n-g out message, one character at a time.
     do_type_message: bool = False
-    character_delay_ms: int = 1
+    character_delay_ms: int = 30
 
 
 @dataclass(frozen=True)
@@ -49,6 +49,15 @@ class MessageDelayCommand(GenericMessageCommand):
     delay_ms: int = 1000
 
 
+@dataclass(frozen=True)
+class StreamingMessageCommand(GenericMessageCommand):
+    """Command that signals frontend to establish streaming connection for real-time LLM output"""
+
+    stream_id: str
+    agent_name: str
+    expects_user_input = True
+
+
 # For the gunshot
 @dataclass(frozen=True)
 class SoundDelayCommand(Command):
@@ -62,6 +71,7 @@ Commands = (
     | SelectOptionCommand
     | MessageCommand
     | SceneEndCommand
+    | StreamingMessageCommand
 )
 
 
