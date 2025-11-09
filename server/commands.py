@@ -1,5 +1,6 @@
 from copy import copy
 from dataclasses import KW_ONLY, dataclass, field
+from typing import Any
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -20,7 +21,7 @@ class GenericMessageCommand(Command):
     _: KW_ONLY
     # Options for t-y-p-i-n-g out message, one character at a time.
     do_type_message: bool = False
-    character_delay_ms: int = 30
+    character_delay_ms: int = 1
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,7 @@ class MessageCommand(GenericMessageCommand):
 
 @dataclass(frozen=True)
 class SelectOptionCommand(GenericMessageCommand):
-    options: list[tuple[str, str]] = None
+    options: list[tuple[str, str]]
     expects_user_input = True
 
     @property
@@ -64,7 +65,7 @@ Commands = (
 )
 
 
-def marshal_command(command: Command) -> dict:
+def marshal_command(command: Command) -> dict[str, Any]:
     data = copy(command.__dict__)
     # Include the expects_user_input field explicitly as it may be otherwise optimized out
     data["expects_user_input"] = command.expects_user_input
@@ -72,7 +73,7 @@ def marshal_command(command: Command) -> dict:
     return data
 
 
-def unmarshal_command(_: dict) -> Command:
+def unmarshal_command(_: dict[Any, Any]) -> Command:
     raise NotImplementedError()
 
 

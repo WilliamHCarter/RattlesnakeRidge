@@ -1,5 +1,4 @@
 import logging
-from time import sleep
 
 from server.commands import *
 from server.game import initialize_game, play_game

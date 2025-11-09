@@ -4,7 +4,7 @@ import uuid
 from flask import jsonify, request
 from langchain.chat_models.openai import ChatOpenAI
 
-from server import AI_API_LIMIT, AI_API_USAGE, app, game_states, logger
+from server import AI_API_LIMIT, ai_api_usage, app, game_states, logger
 from server.commands import marshal_command
 from server.game import Session, initialize_game, play_game
 
@@ -34,12 +34,12 @@ def start_game():
     llm = ChatOpenAI(
         base_url="http://localhost:11434/v1",
         api_key="ollama",
-        model_name=MODEL,
+        model=MODEL,
         model_kwargs={"stop": ["\n"]},
     )
 
     # Initializing the game state
-    game_states[game_id]: Session = initialize_game(llm=llm)
+    game_states[game_id] = initialize_game(llm=llm)
 
     logger.info("Created a new game with id %s", game_id)
     return jsonify(game_id=game_id, message="Game started!")
@@ -47,7 +47,7 @@ def start_game():
 
 @app.route("/play/<game_id>", methods=["POST"])
 def play(game_id):
-    user_input = request.json.get("input")
+    user_input = request.json.get("input") if request.json else None
     game_state = game_states.get(game_id)
 
     if game_state is None:
@@ -63,10 +63,9 @@ def play(game_id):
     command = play_game(game_state, user_input)
 
     if user_input != "" and command != "":
-        global AI_API_USAGE
-        global AI_API_LIMIT
-        AI_API_USAGE += 1
-        if AI_API_USAGE > AI_API_LIMIT:
+        global ai_api_usage
+        ai_api_usage += 1
+        if ai_api_usage > AI_API_LIMIT:
             logger.error("AI API usage exceeded limit %d", AI_API_LIMIT)
             return jsonify(
                 error="Unfortunately we've exceeded our daily limit for AI usage. Please continue your adventure tomorrow."

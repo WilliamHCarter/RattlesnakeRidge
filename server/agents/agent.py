@@ -1,15 +1,16 @@
+from typing import Any
 import yaml
 from langchain.memory import ConversationBufferMemory
 
-def load_agent_data(filename: str) -> dict:
+def load_agent_data(filename: str) -> dict[str, Any]:
     with open(filename, 'r') as file:
         raw = file.read()
-    raw_agent_data = yaml.safe_load(raw)
+    raw_agent_data: dict[str, Any] = yaml.safe_load(raw)
     return raw_agent_data
 
 
 class Agent:
-    _raw: dict
+    _raw: dict[str, Any]
     _memory: ConversationBufferMemory
 
     def __init__(self, datafile: str):
@@ -35,7 +36,7 @@ class Agent:
         return self._raw['intro_talks_first']
     
 class PlayerAgent(Agent):
-    _raw = {
+    _raw: dict[str, Any] = {
         'name': 'You',
         'short_name': 'You',
         'subtitle': '',
@@ -47,5 +48,7 @@ class PlayerAgent(Agent):
         'intro_talks_first': False,
     }
 
-    def __init__(self):
-        self._memory = ConversationBufferMemory()
+    def __init__(self):  # pyright: ignore[reportMissingSuperCall]
+        # Don't call super().__init__() since parent requires datafile parameter
+        # and PlayerAgent uses class-level _raw instead
+        self._memory: ConversationBufferMemory = ConversationBufferMemory()

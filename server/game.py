@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import yaml
 
@@ -50,11 +51,12 @@ class Session:
         self.scene_stack = self.scene_stack[1:]
         self.current_scene = next_scene(self.game_data)
         self.scene_started = False
+        return True
 
     def is_gameover(self) -> bool:
         return self.gameover
 
-    def play(self, user_input: str) -> Command:
+    def play(self, user_input: str | None) -> Command:
         if self.is_gameover():
             logger.warn("User attempted to play a game that has finished")
             return SceneEndCommand("The game is over.", is_game_over=True)
@@ -66,6 +68,7 @@ class Session:
                     user_input,
                 )
             try:
+                assert self.current_scene is not None
                 resp = next(self.current_scene)
             except Exception as error:
                 logger.error(
@@ -77,6 +80,7 @@ class Session:
             self.scene_started = True
         else:
             try:
+                assert self.current_scene is not None
                 resp = self.current_scene.send(user_input)
             except Exception as error:
                 logger.error(
@@ -113,13 +117,13 @@ class Session:
         return True
 
 
-def load_dict(filename: str) -> dict:
+def load_dict(filename: str) -> dict[str, Any]:
     with open(filename, "r") as file:
         raw = file.read()
     return yaml.safe_load(raw)
 
 
-def initialize_game(llm: LLM_t = None) -> Session:
+def initialize_game(llm: LLM_t) -> Session:
     data_dir = "server/data/"
 
     prompts = load_dict(data_dir + "prompts.yaml")
@@ -135,5 +139,5 @@ def initialize_game(llm: LLM_t = None) -> Session:
     return Session(llm=llm, prompts=prompts, setting=setting, actors=actors)
 
 
-def play_game(session: Session, user_input: str) -> Command:
+def play_game(session: Session, user_input: str | None) -> Command:
     return session.play(user_input)

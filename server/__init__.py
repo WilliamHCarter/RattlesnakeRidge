@@ -1,6 +1,7 @@
+# pyright: reportImportCycles=false
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import Flask
 from flask_cors import CORS
@@ -18,7 +19,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 # Global in-memory game state storage for active sessions
 game_states = {}
-AI_API_USAGE: int = 0
+ai_api_usage: int = 0
 AI_API_LIMIT: int = 30
 last_reset_date = datetime.now().date()  # Initialize with the current date
 
@@ -37,12 +38,12 @@ if os.environ.get("FLASK_ENV") == "development":
 else:
     origins = "https://stories.williamcarter.dev, https://api.stories.williamcarter.dev"
 
-CORS(app, origins=[origins])
+_ = CORS(app, origins=[origins])
 
 # Initialize Flask-Limiter
 limiter = Limiter(key_func=get_remote_address, default_limits=["10000 per hour"])
 limiter.init_app(app)
 
-Session(app)
+_ = Session(app)
 
-from server import routes
+from server import routes  # noqa: F401, E402  # pyright: ignore[reportImportCycles]

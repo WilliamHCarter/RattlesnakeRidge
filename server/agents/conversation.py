@@ -27,7 +27,7 @@ class ConversationResponse:
 class LLMData:
     llm: LLM_t
     prompt: str
-    extra_flavor: dict
+    extra_flavor: dict[str, str]
 
 
 class Conversation:

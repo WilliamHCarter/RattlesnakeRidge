@@ -1,6 +1,6 @@
 from server.commands import *
 from copy import copy
-from server.agents.conversation import LLM_t, Conversation, Agent, LLMData, PlayerAgent
+from server.agents.conversation import Agent
 from server.scenes.core import *
 
 
@@ -29,6 +29,7 @@ Thompson.""")
                 ],
             )
 
+            assert choice is not None
             index = int(choice) - 1
         else:
             index = 0
@@ -73,6 +74,7 @@ def second_day_morning_scene(game_data: GameData) -> SceneReturn_t:
     choice = yield SelectOptionCommand(
         "Who would you like to talk to?", options=options
     )
+    assert choice is not None
 
     # Get the list of participants in this conversation
     names = (
@@ -103,6 +105,7 @@ def second_day_afternoon_scene(game_data: GameData) -> SceneReturn_t:
     choice = yield SelectOptionCommand(
         "Who would you like to speak with?", options=options
     )
+    assert choice is not None
     index = int(choice) - 1
     selected = game_data.actors[index]
 
@@ -146,6 +149,7 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
             message = yield MessageCommand(
                 f"\nYou have {responses_left - 1} statements left."
             )
+            assert message is not None
             responses = conversation.converse(message)
             # Adds an empty line
             yield MessageDelayCommand("", delay_ms=0)
@@ -160,6 +164,7 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
 
     options = [(str(i + 1), actor.name) for (i, actor) in enumerate(game_data.actors)]
     choice = yield SelectOptionCommand("Pick.", options=options)
+    assert choice is not None
     index = int(choice) - 1
     selected = game_data.actors[index]
 

@@ -28,4 +28,4 @@ def test_ensure_expected_fields():
     # Ensure message is a required field
     # (it doesn't make sense to send a message without a message)
     with pytest.raises(TypeError):
-        MessageCommand()
+        _ = MessageCommand()  # type: ignore[call-arg]  # pyright: ignore[reportCallIssue]
