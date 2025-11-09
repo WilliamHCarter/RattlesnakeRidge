@@ -1,6 +1,6 @@
 import logging
 
-from local_game import initialize_local_game, play_local_game
+from server.game import initialize_game, play_game
 from server.commands import *
 
 logger = logging.getLogger()
@@ -81,9 +81,9 @@ if __name__ == "__main__":
         extra_flavor={},  # This will be set per conversation
     )
 
-    game = initialize_local_game(llm_data=llm_data)
+    game = initialize_game(llm_data=llm_data)
     user_response = None
     while not game.is_gameover():
-        response = play_local_game(game, user_response)
+        response = play_game(game, user_response)
         user_response = local_implementation(response)
         assert game.is_input_valid(user_response)
