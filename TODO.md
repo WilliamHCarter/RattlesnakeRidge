@@ -13,6 +13,7 @@ What are we doing today?
 - [ ] Hint about how long a conversation has been going on
 - [ ] Streaming model response
 - [ ] Get it running e2e
+- [ ] Clue bank system
 - [x] Hook up to ollama
 
 Minor Tweaks:
