@@ -8,3 +8,4 @@ venv/
 *flask_session/
 server.log
 .pytest_cache/
+.claude/settings.local.json
