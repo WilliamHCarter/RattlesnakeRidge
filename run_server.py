@@ -1,6 +1,8 @@
 import logging
 
-from server import app
+from server import create_app
+
+app = create_app()
 
 # Set up the default logger
 logger = logging.getLogger()

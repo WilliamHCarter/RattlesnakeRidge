@@ -1,19 +1,13 @@
 import logging
 import re
 from dataclasses import dataclass
-
-from langchain.callbacks import get_openai_callback
-from langchain.chains import LLMChain
-from langchain.chat_models import ChatOpenAI, FakeListChatModel
-from langchain.prompts import PromptTemplate
-from langchain.schema.messages import ChatMessage
+from typing import Union, List, Dict, Any
+import openai
+from openai import OpenAI
 
 from server.agents.agent import Agent, PlayerAgent
 
 logger = logging.getLogger(__name__)
-
-
-LLM_t = ChatOpenAI | FakeListChatModel
 
 
 @dataclass
@@ -25,7 +19,8 @@ class ConversationResponse:
 
 @dataclass
 class LLMData:
-    llm: LLM_t
+    client: OpenAI
+    model: str
     prompt: str
     extra_flavor: dict[str, str]
 
@@ -34,27 +29,14 @@ class Conversation:
     def __init__(self, agents: list[Agent | PlayerAgent], llmd: LLMData):
         # Declare vars
         self.agents = agents
-        self.conversations = []
+        self.llmd = llmd
         self.formatted_prompts = []
 
-        # Create the prompts and conversations
+        # Create the prompts for each agent
         for i, agent in enumerate(agents):
             self.formatted_prompts.append(
                 llmd.prompt.format(**{**agent._raw, **llmd.extra_flavor})
             )
-
-            # Initialize the conversations
-            if not isinstance(agent, PlayerAgent):
-                self.conversations.append(
-                    LLMChain(
-                        llm=llmd.llm,
-                        prompt=PromptTemplate.from_template(self.formatted_prompts[i]),
-                        verbose=False,
-                        memory=self.agents[i]._memory,
-                    )
-                )
-            else:
-                self.conversations.append("player")
 
     def __parse_response(self, agent: Agent, text: str) -> ConversationResponse:
         # Remove thinking tags (e.g., <think>...</think> or <thinking>...</thinking>)
@@ -72,13 +54,11 @@ class Conversation:
             return ConversationResponse(text, agent.name, True)
         return ConversationResponse(text, agent.name, False)
 
-    # Cycles the agents and conversations to the next one.
+    # Cycles the agents to the next one.
     # (We cycle and not iterate so that the conversation order can be easily observed externally by inspecting the Conversation object)
     def cycle_agents(self):
         curr = self.agents.pop(0)
         self.agents.append(curr)
-        tmp = self.conversations.pop(0)
-        self.conversations.append(tmp)
 
     def begin_conversation(self) -> list[ConversationResponse]:
         """Starts a conversation without player input"""
@@ -94,13 +74,12 @@ class Conversation:
             self.cycle_agents()
 
         while not isinstance(self.agents[0], PlayerAgent):
-            res, mes = self.__talk(
-                self.agents[0], self.conversations[0], carried_message
-            )
+            res, mes = self.__talk(self.agents[0], carried_message)
             responses.append(res)
 
+            # Add message to all agents' memory
             for a in self.agents:
-                a._memory.chat_memory.add_message(mes)
+                a._memory.save_context({"input": carried_message}, {"text": res.text})
 
             self.cycle_agents()
             carried_message = res.text
@@ -111,41 +90,75 @@ class Conversation:
         if agent not in self.agents:
             raise ValueError(f"Agent {agent.name} is not in the conversation")
 
-        conversation = self.conversations[self.agents.index(agent)]
         responses: list[ConversationResponse] = []
 
         # Converse directly with the target agent without disturbing turn order
-        res, mes = self.__talk(agent, conversation, message)
+        res, mes = self.__talk(agent, message)
         responses.append(res)
+
+        # Add message to all agents' memory
         for a in self.agents:
-            a._memory.chat_memory.add_message(mes)
+            a._memory.save_context({"input": message}, {"text": res.text})
 
         return responses
 
     # Makes a single agent speak given a message.
-    def __talk(self, agent: Agent, conversation, message: str):
+    def __talk(self, agent: Agent, message: str):
         if isinstance(agent, PlayerAgent):
-            raise ValueError("PlayerAgent shoudn't talk via this method")
+            raise ValueError("PlayerAgent shouldn't talk via this method")
 
-        with get_openai_callback() as cb:
-            raw_response = conversation({"message": message})
-            res: ConversationResponse = self.__parse_response(
-                agent, raw_response["text"]
+        # Get the agent's prompt template
+        agent_index = self.agents.index(agent)
+        prompt_template = self.formatted_prompts[agent_index]
+
+        # Get conversation history
+        history = agent._memory.buffer
+
+        # Format the full prompt with history and current message
+        full_prompt = f"{prompt_template}\n\nConversation history:\n{history}\nHuman: {message}\n{agent.name}:"
+
+        try:
+            # Make direct OpenAI API call
+            response = self.llmd.client.chat.completions.create(
+                model=self.llmd.model,
+                messages=[
+                    {"role": "system", "content": "You are an AI character in a western mystery game. Stay in character and respond as the character would."},
+                    {"role": "user", "content": full_prompt}
+                ],
+                max_tokens=500,
+                temperature=0.7,
+                stop=["\nHuman:", "\nPlayer:"]
             )
-            # Avoid logging if both values are zero. This likely means we aren't using an OpenAI model
-            # at this time.
-            if cb.prompt_tokens != 0 or cb.completion_tokens != 0:
-                logger.info(
-                    "invoked llm. prompt tokens=%d ; completion tokens=%d ; cost=%f",
-                    cb.prompt_tokens,
-                    cb.completion_tokens,
-                    cb.total_cost,
-                )
 
-        # We need to remove and rename the AIMessage that gets added automatically
-        # and re-add it as a ChatMessage with the correct label
-        cm = agent._memory.chat_memory
-        cm.messages = cm.messages[:-1]
-        msg: ChatMessage = ChatMessage(role=agent.name, content=res.text)
-        # Return the generated response
-        return res, msg
+            raw_response = response.choices[0].message.content or ""
+            res: ConversationResponse = self.__parse_response(agent, raw_response)
+
+            # Log token usage (basic logging)
+            logger.info(
+                "invoked llm for agent %s. response_length=%d",
+                agent.name,
+                len(raw_response)
+            )
+
+            # Create a simple message object for memory
+            class SimpleMessage:
+                def __init__(self, role: str, content: str):
+                    self.role = role
+                    self.content = content
+
+            msg = SimpleMessage(role=agent.name, content=res.text)
+            return res, msg
+
+        except Exception as e:
+            logger.error(f"Error calling OpenAI API for agent {agent.name}: {e}")
+            # Return a fallback response
+            fallback_response = f"{agent.name}: I'm not sure what to say right now."
+            res = self.__parse_response(agent, fallback_response)
+
+            class SimpleMessage:
+                def __init__(self, role: str, content: str):
+                    self.role = role
+                    self.content = content
+
+            msg = SimpleMessage(role=agent.name, content=res.text)
+            return res, msg

@@ -1,7 +1,7 @@
 import logging
 
+from local_game import initialize_local_game, play_local_game
 from server.commands import *
-from server.game import initialize_game, play_game
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -65,21 +65,25 @@ def local_implementation(incoming_command) -> None | str:
 
 
 if __name__ == "__main__":
-    from langchain.chat_models import FakeListChatModel
+    from openai import OpenAI
 
-    llm = FakeListChatModel(
-        verbose=True,
-        responses=[
-            "Hi there, I'm talking to you.",
-            "This is a response",
-            "I say something else too!",
-            "Ok, goodbye now!",
-        ],
+    from server.agents.conversation import LLMData
+
+    # Create OpenAI client for local Ollama server
+    client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+
+    # Create LLMData for local development using Ollama
+    MODEL = "granite3.1-dense:8b"
+    llm_data = LLMData(
+        client=client,
+        model=MODEL,
+        prompt="",  # This will be set per conversation
+        extra_flavor={},  # This will be set per conversation
     )
 
-    game = initialize_game(llm=llm)
+    game = initialize_local_game(llm_data=llm_data)
     user_response = None
     while not game.is_gameover():
-        response = play_game(game, user_response)
+        response = play_local_game(game, user_response)
         user_response = local_implementation(response)
         assert game.is_input_valid(user_response)

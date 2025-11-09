@@ -2,11 +2,13 @@ import logging
 import uuid
 
 from flask import jsonify, request
-from langchain.chat_models.openai import ChatOpenAI
+from openai import OpenAI
 
-from server import AI_API_LIMIT, ai_api_usage, app, game_states, logger
+from server import app, logger
+from server.session import AI_API_LIMIT, ai_api_usage, game_states
 from server.commands import marshal_command
 from server.game import Session, initialize_game, play_game
+from server.agents.conversation import LLMData
 
 logger = logging.getLogger(__name__)
 
@@ -16,30 +18,23 @@ def start_game():
     # Generating a unique game ID
     game_id = str(uuid.uuid4())
 
-    # Create the llm to use for this game
-    # todo:: get the user's provided API key ;)
-
-    # llm = FakeListChatModel(
-    #     verbose=True,
-    #     responses=[
-    #         "Hi there, I'm talking to you.",
-    #         "This is a response",
-    #         "I say something else too!",
-    #         "Ok, goodbye now!",
-    #     ],
-    # )
-
-    # Use a local Ollama server
-    MODEL = "granite3.1-dense:8b"
-    llm = ChatOpenAI(
+    # Create OpenAI client for local Ollama server
+    client = OpenAI(
         base_url="http://localhost:11434/v1",
-        api_key="ollama",
+        api_key="ollama"
+    )
+
+    # Create LLMData for the game
+    MODEL = "granite3.1-dense:8b"
+    llm_data = LLMData(
+        client=client,
         model=MODEL,
-        model_kwargs={"stop": ["\n"]},
+        prompt="",  # This will be set per conversation
+        extra_flavor={}  # This will be set per conversation
     )
 
     # Initializing the game state
-    game_states[game_id] = initialize_game(llm=llm)
+    game_states[game_id] = initialize_game(llm_data=llm_data)
 
     logger.info("Created a new game with id %s", game_id)
     return jsonify(game_id=game_id, message="Game started!")

@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Generator
 from collections.abc import Callable
-from server.agents.conversation import LLM_t, Conversation, Agent, LLMData, PlayerAgent
+from server.agents.conversation import Conversation, Agent, LLMData, PlayerAgent
 from server.commands import *
 
 @dataclass(frozen=True)
 class GameData:
-    llm: LLM_t
+    llm_data: LLMData
     actors: list[Agent]
     player: PlayerAgent
     prompts: dict[str, str]
@@ -19,14 +19,15 @@ Scene_t = Callable[[GameData], SceneReturn_t]
 
 
 def make_conversation(
-            game_data: GameData, 
-            order: list[Agent], 
+            game_data: GameData,
+            order: list[Agent],
             prompt_name: str = "single_person_conversation_complex"
         ) -> Conversation:
     llm_data = LLMData(
-        game_data.llm, 
-        game_data.prompts[prompt_name], 
-        game_data.setting_data
+        client=game_data.llm_data.client,
+        model=game_data.llm_data.model,
+        prompt=game_data.prompts[prompt_name],
+        extra_flavor=game_data.setting_data
     )
     return Conversation(order, llm_data)
 

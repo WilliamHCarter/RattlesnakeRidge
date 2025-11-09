@@ -2,9 +2,10 @@ import logging
 from typing import Any
 
 import yaml
+from openai import OpenAI
 
 import server.scenes.rattlesnake_ridge
-from server.agents.conversation import Agent, LLM_t, PlayerAgent
+from server.agents.conversation import Agent, LLMData, PlayerAgent
 from server.commands import (
     Command,
     MessageCommand,
@@ -22,8 +23,8 @@ class Session:
     scene_stack: list[Scene_t] = server.scenes.rattlesnake_ridge.SCENE_ORDER
     last_scene_output: Command | None = None
 
-    def __init__(self, llm: LLM_t, prompts, setting, actors):
-        self.llm = llm
+    def __init__(self, llm_data: LLMData, prompts, setting, actors):
+        self.llm_data = llm_data
         self.player = PlayerAgent()
         self.prompts = prompts
         self.setting = setting
@@ -36,7 +37,7 @@ class Session:
     @property
     def game_data(self):
         return GameData(
-            llm=self.llm,
+            llm_data=self.llm_data,
             actors=self.actors,
             prompts=self.prompts,
             player=self.player,
@@ -123,7 +124,7 @@ def load_dict(filename: str) -> dict[str, Any]:
     return yaml.safe_load(raw)
 
 
-def initialize_game(llm: LLM_t) -> Session:
+def initialize_game(llm_data: LLMData) -> Session:
     data_dir = "server/data/"
 
     prompts = load_dict(data_dir + "prompts.yaml")
@@ -136,7 +137,7 @@ def initialize_game(llm: LLM_t) -> Session:
     ]
 
     logger.info("Initialized a new game")
-    return Session(llm=llm, prompts=prompts, setting=setting, actors=actors)
+    return Session(llm_data=llm_data, prompts=prompts, setting=setting, actors=actors)
 
 
 def play_game(session: Session, user_input: str | None) -> Command:
