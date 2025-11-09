@@ -6,10 +6,16 @@ What do we want to do?
 - [ ] Aidan wants it to work
 - [ ] Aidan also wants to fine-tune it after it works so it works _even better_
 - [ ] Will actually thinks he should make objects and situations randomizable
+- [ ] Talk with non-pre-written Characters (e.g. Rose, the girl who gives an alibi) adhoc
 
 What are we doing today?
-- [ ] Hook up to ollama
+- [ ] End a conversation early
+- [ ] Hint about how long a conversation has been going on
+- [ ] Streaming model response
 - [ ] Get it running e2e
+- [x] Hook up to ollama
 
 Minor Tweaks:
-- [ ] Bug? The typing delay always happens despite what is written in the backend?
+- [x] The typing delay always happens despite what is written in the backend
+- [ ] We need to gender the visitor so that people don't say sir/maam.
+- [ ] Characters will frequently begin their conversation with the same phrase.
