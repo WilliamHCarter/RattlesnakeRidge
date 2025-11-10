@@ -1,14 +1,14 @@
 import logging
 
-from server.game import initialize_game, play_game
 from server.commands import *
+from server.game import initialize_game, play_game
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Create a console logger
 ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.ERROR)
 ch.setFormatter(
     logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 )

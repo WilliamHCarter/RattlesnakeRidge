@@ -9,8 +9,8 @@ What do we want to do?
 - [ ] Talk with non-pre-written Characters (e.g. Rose, the girl who gives an alibi) adhoc
 
 What are we doing today?
-- [ ] End a conversation early
-- [ ] Hint about how long a conversation has been going on
+- [x] End a conversation early
+- [x] Hint about how long a conversation has been going on
 - [ ] Streaming model response
 - [ ] Get it running e2e
 - [ ] Clue bank system

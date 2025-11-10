@@ -49,8 +49,5 @@ single_person_conversation_complex: |-
 
   You can only write a single line per response. Your response must begin with "{name}:".
 
-  {{message}}
-  {name}:
-
 other_example: |-
   This is another example prompt.

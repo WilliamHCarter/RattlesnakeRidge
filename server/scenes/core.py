@@ -33,22 +33,28 @@ def make_conversation(
     return Conversation(order, llm_data)
 
 
-def have_conversation(conversation: Conversation, max_player_messages: int):
+def have_conversation(conversation: Conversation, max_player_messages: int, warn_after: int, warn_message: str):
     responses_left = max_player_messages
 
     responses = conversation.begin_conversation()
 
-    while responses_left > 0:
+    while responses_left >= 0:
         # Display all the responses
         for i, r in enumerate(responses):
             if r.conversation_ends: responses_left = 0
             msg = f"{r.agent}: {r.text}"
+            
+            if responses_left == warn_after:
+                msg += "\n" + warn_message + "\n"
+                
             if i < len(responses) - 1 or responses_left == 0:
                 yield MessageDelayCommand(msg)
             else:
                 # If this is the last response and the player has allowed messages,
                 # get input and get new responses
                 message = yield MessageCommand(msg)
+                if message == "/quit":
+                    break
                 responses = conversation.converse(message)
 
         responses_left -= 1

@@ -1,9 +1,7 @@
 import logging
 import re
 from dataclasses import dataclass
-from typing import Union, List, Dict, Any
-import openai
-from openai import OpenAI
+from typing import Any, Dict, List, Union
 
 from server.agents.agent import Agent, PlayerAgent
 
@@ -19,7 +17,7 @@ class ConversationResponse:
 
 @dataclass
 class LLMData:
-    client: OpenAI
+    client: Any  # OpenAI client
     model: str
     prompt: str
     extra_flavor: dict[str, str]
@@ -30,13 +28,21 @@ class Conversation:
         # Declare vars
         self.agents = agents
         self.llmd = llmd
-        self.formatted_prompts = []
+        self.agent_llm_data_map = {}
 
-        # Create the prompts for each agent
-        for i, agent in enumerate(agents):
-            self.formatted_prompts.append(
-                llmd.prompt.format(**{**agent._raw, **llmd.extra_flavor})
-            )
+        # Create individual LLMData for each agent with their personalized prompt
+        for agent in agents:
+            if not isinstance(agent, PlayerAgent):
+                individual_prompt = llmd.prompt.format(
+                    **{**agent._raw, **llmd.extra_flavor}
+                )
+                agent_llmd = LLMData(
+                    client=llmd.client,
+                    model=llmd.model,
+                    prompt=individual_prompt,
+                    extra_flavor=llmd.extra_flavor,
+                )
+                self.agent_llm_data_map[agent] = agent_llmd
 
     def __parse_response(self, agent: Agent, text: str) -> ConversationResponse:
         # Remove thinking tags (e.g., <think>...</think> or <thinking>...</thinking>)
@@ -48,9 +54,11 @@ class Conversation:
 
         # If the text starts with "[QUIT]", the conversation
         # is over and that command should be stripped.
-        terminate_prefix = "[QUIT]"
+        terminate_prefix = "<quit>"
         if text.startswith(terminate_prefix):
             text = text[len(terminate_prefix) :].lstrip()
+            # Remove any </quit> as well
+            text = text.rstrip("</quit>")
             return ConversationResponse(text, agent.name, True)
         return ConversationResponse(text, agent.name, False)
 
@@ -107,27 +115,33 @@ class Conversation:
         if isinstance(agent, PlayerAgent):
             raise ValueError("PlayerAgent shouldn't talk via this method")
 
-        # Get the agent's prompt template
-        agent_index = self.agents.index(agent)
-        prompt_template = self.formatted_prompts[agent_index]
+        # Get the agent's individual LLMData from the mapping
+        agent_llmd = self.agent_llm_data_map[agent]
 
-        # Get conversation history
-        history = agent._memory.buffer
+        # Build conversation messages
+        messages = []
 
-        # Format the full prompt with history and current message
-        full_prompt = f"{prompt_template}\n\nConversation history:\n{history}\nHuman: {message}\n{agent.name}:"
+        # System message is the agent's personalized prompt
+        messages.append({"role": "system", "content": agent_llmd.prompt})
+
+        # Add conversation history from memory
+        for msg in agent._memory.messages:
+            if msg["role"] == "user":
+                messages.append({"role": "user", "content": msg["content"]})
+            elif msg["role"] == "assistant":
+                messages.append({"role": "assistant", "content": msg["content"]})
+
+        # Add current user message
+        messages.append({"role": "user", "content": message})
 
         try:
-            # Make direct OpenAI API call
-            response = self.llmd.client.chat.completions.create(
-                model=self.llmd.model,
-                messages=[
-                    {"role": "system", "content": "You are an AI character in a western mystery game. Stay in character and respond as the character would."},
-                    {"role": "user", "content": full_prompt}
-                ],
+            # Make direct OpenAI API call with agent's individual LLMData
+            response = agent_llmd.client.chat.completions.create(
+                model=agent_llmd.model,
+                messages=messages,
                 max_tokens=500,
-                temperature=0.7,
-                stop=["\nHuman:", "\nPlayer:"]
+                temperature=0.05,
+                stop=["\n"],
             )
 
             raw_response = response.choices[0].message.content or ""
@@ -137,7 +151,7 @@ class Conversation:
             logger.info(
                 "invoked llm for agent %s. response_length=%d",
                 agent.name,
-                len(raw_response)
+                len(raw_response),
             )
 
             # Create a simple message object for memory

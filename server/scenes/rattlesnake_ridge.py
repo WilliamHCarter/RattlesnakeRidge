@@ -1,18 +1,23 @@
-from server.commands import *
+import logging
+import random
 from copy import copy
+
 from server.agents.conversation import Agent
+from server.commands import *
 from server.scenes.core import *
+
+logger = logging.getLogger(__name__)
 
 
 def first_day_scene(game_data: GameData) -> SceneReturn_t:
     yield MessageDelayCommand("""As the sun sets on the horizon, you ride into the dusty outpost \
 of Rattlesnake Ridge. The villagers are gathered around the town \
-center, murmuring about a heinous crime: a local prospector named Jeb, \
+center, murmuring about a heinous crime: a local prospector named Rusty McKenna, \
 known for recently striking gold, has been found dead. Word is that \
 his stash of gold is missing too. You decide to step in, and after \
 introducing yourself, you have the option to speak to the main \
 suspects: Whistle, Miss Clara, Marshal Flint, and Billy "Snake Eyes" \
-Thompson.""")
+Thompson. You'll be able to ask each of them some preliminary questions, and you want to get to all of them today.""")
 
     remaining_actors = copy(game_data.actors)
     number_actors = len(remaining_actors)
@@ -38,12 +43,47 @@ Thompson.""")
         remaining_actors.remove(selected_actor)
 
         # Tell the user who they're talking to
-        yield MessageDelayCommand(f"Time to talk to {selected_actor.name}\n")
-        yield MessageDelayCommand(selected_actor.introduction + "\n", delay_ms=3200)
+        # yield MessageDelayCommand(f"Time to talk to {selected_actor.name}\n")
+        yield MessageDelayCommand(
+            "\n" + selected_actor.introduction + "\n", delay_ms=3200
+        )
+
+        # Select a random "conversation ending warning message"
+        conversation_ending = [
+            ("You notice what time it is. You have time for three more questions", 3),
+            (
+                "You suddenly feel a chill run down your spine. You have time for two more questions",
+                2,
+            ),
+            (
+                "You hear a faint whisper in the distance. You have time for two more questions",
+                2,
+            ),
+            (
+                "You feel a sudden urge to leave. You have time for one last question",
+                1,
+            ),
+            ("Your stomach rumbles. You can make time for three more questions", 3),
+            (
+                "You feel a sudden warmth in your pants. You have time for one last question",
+                1,
+            ),
+        ]
+
+        # Select a random "conversation ending warning message"
+        conversation_ending = random.choice(conversation_ending)
+
+        # Now pick a number of turns for the conversation between 5 and 7
+        conversation_length = random.randint(5, 7)
 
         # Have the conversation
         conversation = make_conversation(game_data, [selected_actor, game_data.player])
-        yield from have_conversation(conversation, 6)
+        yield from have_conversation(
+            conversation,
+            conversation_length,
+            conversation_ending[1],
+            conversation_ending[0],
+        )
 
         if len(remaining_actors) > 0:
             yield MessageDelayCommand(
@@ -88,7 +128,12 @@ def second_day_morning_scene(game_data: GameData) -> SceneReturn_t:
 
     # Have a conversation
     conversation = make_conversation(game_data, actors)
-    yield from have_conversation(conversation, 12)
+    yield from have_conversation(
+        conversation,
+        12,
+        2,
+        "You can tell tensions are high. You reckon you have time for two more questions.",
+    )
 
     yield SceneEndCommand(
         """\nA sudden gunshot rings out, interrupting your conversation. The \
@@ -114,7 +159,10 @@ def second_day_afternoon_scene(game_data: GameData) -> SceneReturn_t:
     )
 
     yield from have_conversation(
-        make_conversation(game_data, [selected, game_data.player]), 6
+        make_conversation(game_data, [selected, game_data.player]),
+        6,
+        5,
+        "The air in the town is thick with tension. You can ask five more questions.",
     )
 
     yield SceneEndCommand(
@@ -206,7 +254,7 @@ make their escape, leaving you with the weight of your misjudgment.""",
     yield MessageDelayCommand("\n", delay_ms=3000)
     yield MessageDelayCommand("Thank you for playing Rattlesnake Ridge!")
     yield SceneEndCommand(
-        "Made with pride by Will Carter and Aidan McHugh", is_game_over=True
+        "Made with ~love~ ;) by Will Carter and Aidan McHugh", is_game_over=True
     )
 
 
