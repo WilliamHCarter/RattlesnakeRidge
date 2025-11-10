@@ -11,6 +11,7 @@ class GameData:
     player: PlayerAgent
     prompts: dict[str, str]
     setting_data: dict[str, str]
+    murder_scenario: Any = None
 
 
 UserInput_t = str | None

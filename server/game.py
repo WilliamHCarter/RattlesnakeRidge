@@ -1,10 +1,11 @@
 import logging
-from typing import Any
-
 import yaml
-from openai import OpenAI
-
 import server.scenes.rattlesnake_ridge
+
+from typing import Any
+from openai import OpenAI
+from server.clue_randomizer import ClueRandomizer, inject_scenario_into_agents, MurderScenario
+
 from server.agents.conversation import Agent, LLMData, PlayerAgent
 from server.commands import (
     Command,
@@ -23,12 +24,13 @@ class Session:
     scene_stack: list[Scene_t] = server.scenes.rattlesnake_ridge.SCENE_ORDER
     last_scene_output: Command | None = None
 
-    def __init__(self, llm_data: LLMData, prompts, setting, actors):
+    def __init__(self, llm_data: LLMData, prompts, setting, actors, murder_scenario):
         self.llm_data = llm_data
         self.player = PlayerAgent()
         self.prompts = prompts
         self.setting = setting
         self.actors = actors
+        self.murder_scenario = murder_scenario
         self.logs = []
         self.gameover = False
 
@@ -42,6 +44,7 @@ class Session:
             prompts=self.prompts,
             player=self.player,
             setting_data=self.setting,
+            murder_scenario=self.murder_scenario,
         )
 
     def start_next_scene(self) -> bool:
@@ -136,8 +139,15 @@ def initialize_game(llm_data: LLMData) -> Session:
         Agent(datafile=data_dir + f"characters/{name}.yaml") for name in character_names
     ]
 
-    logger.info("Initialized a new game")
-    return Session(llm_data=llm_data, prompts=prompts, setting=setting, actors=actors)
+    # Generate random murder scenario
+    randomizer = ClueRandomizer(clue_bank_path=data_dir + "clue_bank.yaml")
+    murder_scenario = randomizer.generate_scenario()
+
+    # Inject scenario into agents (modifies agents and prompts)
+    inject_scenario_into_agents(actors, murder_scenario, prompts)
+
+    logger.info(f"Initialized a new game - Killer: {murder_scenario.killer}, Motive: {murder_scenario.motive}")
+    return Session(llm_data=llm_data, prompts=prompts, setting=setting, actors=actors, murder_scenario=murder_scenario)
 
 
 def play_game(session: Session, user_input: str | None) -> Command:

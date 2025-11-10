@@ -43,7 +43,7 @@ Thompson.""")
 
         # Have the conversation
         conversation = make_conversation(game_data, [selected_actor, game_data.player])
-        yield from have_conversation(conversation, 6)
+        yield from have_conversation(conversation, 1)
 
         if len(remaining_actors) > 0:
             yield MessageDelayCommand(
@@ -88,7 +88,7 @@ def second_day_morning_scene(game_data: GameData) -> SceneReturn_t:
 
     # Have a conversation
     conversation = make_conversation(game_data, actors)
-    yield from have_conversation(conversation, 12)
+    yield from have_conversation(conversation, 1)
 
     yield SceneEndCommand(
         """\nA sudden gunshot rings out, interrupting your conversation. The \
@@ -130,7 +130,7 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
     conv = copy(game_data.actors) + [game_data.player]
     conversation = make_conversation(game_data, conv)
 
-    responses_left = 13
+    responses_left = 1
     responses = conversation.begin_conversation()
 
     while responses_left > 0:
@@ -149,7 +149,6 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
             message = yield MessageCommand(
                 f"\nYou have {responses_left - 1} statements left."
             )
-            assert message is not None
             responses = conversation.converse(message)
             # Adds an empty line
             yield MessageDelayCommand("", delay_ms=0)
@@ -164,20 +163,26 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
 
     options = [(str(i + 1), actor.name) for (i, actor) in enumerate(game_data.actors)]
     choice = yield SelectOptionCommand("Pick.", options=options)
-    assert choice is not None
     index = int(choice) - 1
     selected = game_data.actors[index]
 
-    if selected.name == "Whistle":
+    # Check if the player got it right using the murder scenario
+    if hasattr(game_data, 'murder_scenario') and game_data.murder_scenario:
+        is_correct = game_data.murder_scenario.is_correct_guess(selected.name)
+    else:
+        # Fallback to original hardcoded solution if no scenario
+        is_correct = selected.name == "Whistle"
+
+    if is_correct:
         yield MessageDelayCommand(
-            "\n\nYou aim your gun at Whistle, and pull the trigger."
+            f"\n\nYou aim your gun at {selected.name}, and pull the trigger."
         )
         yield SoundDelayCommand("bang.mp3", delay_ms=1000)
         yield MessageDelayCommand(
-            "The bullet flies through the air, and hits Whistle square in the chest."
+            f"The bullet flies through the air, and hits {selected.name} square in the chest."
         )
         yield MessageDelayCommand(
-            "Whistle falls to the ground, dead. The townsfolk cheer; you are hailed as a hero. The ghost of Jeb can rest easy."
+            f"{selected.name} falls to the ground. As they take their last breath, they confess: 'Yes... I killed Rusty... because of {game_data.murder_scenario.motive}...' The townsfolk cheer; you are hailed as a hero. The ghost of Rusty can rest easy."
         )
     else:
         yield MessageDelayCommand(
@@ -203,6 +208,7 @@ make their escape, leaving you with the weight of your misjudgment.""",
     yield SceneEndCommand(
         "Made with pride by Will Carter and Aidan McHugh", is_game_over=True
     )
+
 
 
 SCENE_ORDER = [

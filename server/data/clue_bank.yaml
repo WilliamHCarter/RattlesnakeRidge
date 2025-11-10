@@ -1,0 +1,185 @@
+---
+# Clue Bank System - Each character has clues based on their role in town
+# {killer} will be replaced with actual killer's name when distributed
+# supports_killer: list of characters this clue could implicate (or "any")
+# supports_motive: list of compatible motives (or "any")
+
+clara: # The shopkeeper - sees purchases, comings and goings
+  - text: "I noticed {killer} purchased some unusual items recently - rope and a shovel, said it was for repairs but..."
+    supports_killer: ["Whistle", "Billy", "Flint"]
+    supports_motive: ["cover_up", "planned"]
+    strength: "medium"
+
+  - text: "{killer} came in looking disheveled this morning, mud on their boots and wouldn't meet my eye"
+    supports_killer: ["Whistle", "Billy", "Flint"]
+    supports_motive: ["any"]
+    strength: "weak"
+
+  - text: "Rusty bought a bottle of nice whiskey yesterday - said it was a peace offering for someone"
+    supports_killer: ["any"]
+    supports_motive: ["betrayal", "revenge", "debt"]
+    strength: "medium"
+
+  - text: "{killer} has been buying a lot of liquor lately, more than usual. Seemed troubled"
+    supports_killer: ["Whistle", "Billy"]
+    supports_motive: ["guilt", "stress", "debt"]
+    strength: "weak"
+
+  - text: "Found {killer} in my store after hours last week, claimed they forgot something"
+    supports_killer: ["Whistle", "Billy", "Flint"]
+    supports_motive: ["theft", "desperation"]
+    strength: "medium"
+
+  - text: "Rusty was in here asking about rat poison. I told him we don't carry it"
+    supports_killer: ["any"]
+    supports_motive: ["fear", "threatened"]
+    strength: "weak"
+
+  # Red herrings
+  - text: "Billy was asking about train schedules out of town yesterday morning"
+    supports_killer: []
+    supports_motive: []
+    strength: "weak"
+
+  - text: "Marshal Flint bought bandages last week, had a cut on his hand"
+    supports_killer: []
+    supports_motive: []
+    strength: "weak"
+
+flint: # The marshal - notices suspicious behavior, has access to evidence
+  - text: "Found a distinctive button near the body - seen {killer} wearing a coat with similar buttons"
+    supports_killer: ["Whistle", "Clara", "Billy"]
+    supports_motive: ["any"]
+    strength: "strong"
+
+  - text: "Witness saw {killer} heading toward the mine after dark, bout an hour before the gunshot"
+    supports_killer: ["Whistle", "Clara", "Billy"]
+    supports_motive: ["any"]
+    strength: "strong"
+
+  - text: "The angle of the wound suggests someone who knew how to handle a weapon proper"
+    supports_killer: ["Billy"]
+    supports_motive: ["professional", "experienced"]
+    strength: "medium"
+
+  - text: "{killer} has been avoiding me lately, taking the long way around town"
+    supports_killer: ["Whistle", "Clara", "Billy"]
+    supports_motive: ["guilt", "fear"]
+    strength: "medium"
+
+  - text: "Found gambling chips in Rusty's pocket - high denomination ones from the saloon"
+    supports_killer: ["Whistle"]
+    supports_motive: ["debt", "gambling"]
+    strength: "medium"
+
+  - text: "Boot prints at the scene match a size worn by {killer}"
+    supports_killer: ["Whistle", "Billy"]
+    supports_motive: ["any"]
+    strength: "medium"
+
+  - text: "Rusty had defensive wounds - he saw his attacker coming"
+    supports_killer: ["any"]
+    supports_motive: ["confrontation", "argument"]
+    strength: "weak"
+
+  # Self-incriminating if Flint is guilty
+  - text: "My deputy saw someone matching {killer}'s build near the mine"
+    supports_killer: ["Whistle", "Clara", "Billy"]
+    supports_motive: ["any"]
+    strength: "medium"
+
+whistle: # Saloon owner - hears gossip, knows about debts and conflicts
+  - text: "{killer} lost big at cards last week, owed the house three month's wages"
+    supports_killer: ["Billy", "Flint"]
+    supports_motive: ["debt", "desperation"]
+    strength: "strong"
+
+  - text: "Rusty was flashing gold around my saloon, making folks mighty envious"
+    supports_killer: ["any"]
+    supports_motive: ["greed", "envy"]
+    strength: "weak"
+
+  - text: "{killer} had too much to drink and said something about 'taking care' of Rusty for good"
+    supports_killer: ["Billy", "Flint", "Clara"]
+    supports_motive: ["revenge", "threat", "drunk"]
+    strength: "strong"
+
+  - text: "Heard {killer} and Rusty arguing in the back room last week - something about a secret"
+    supports_killer: ["Billy", "Clara", "Flint"]
+    supports_motive: ["secret", "blackmail", "betrayal"]
+    strength: "medium"
+
+  - text: "{killer} asked me for a loan recently, seemed desperate for cash"
+    supports_killer: ["Billy", "Clara", "Flint"]
+    supports_motive: ["debt", "desperation"]
+    strength: "medium"
+
+  - text: "Rusty won big at poker two nights ago, took money from {killer}"
+    supports_killer: ["Billy", "Flint"]
+    supports_motive: ["revenge", "debt", "humiliation"]
+    strength: "medium"
+
+  # Red herrings
+  - text: "Someone's been watering down my whiskey - lost a lot of inventory"
+    supports_killer: []
+    supports_motive: []
+    strength: "weak"
+
+  - text: "Found a lady's handkerchief in the back room, but none of our ladies been around"
+    supports_killer: []
+    supports_motive: []
+    strength: "weak"
+
+billy: # Drifter - notices things others miss, knows about shady dealings
+  - text: "Saw {killer} burning something behind their place, smelled like cloth"
+    supports_killer: ["Whistle", "Clara", "Flint"]
+    supports_motive: ["cover_up", "evidence"]
+    strength: "strong"
+
+  - text: "{killer} has been meeting someone in secret near the old oak tree at night"
+    supports_killer: ["Whistle", "Clara", "Flint"]
+    supports_motive: ["conspiracy", "blackmail", "secret"]
+    strength: "medium"
+
+  - text: "Found this torn piece of fabric near the mine - looks like {killer}'s shirt"
+    supports_killer: ["Whistle", "Clara", "Flint"]
+    supports_motive: ["any"]
+    strength: "strong"
+
+  - text: "Rusty told me he had dirt on someone important in this town"
+    supports_killer: ["Flint", "Whistle"]
+    supports_motive: ["blackmail", "secret"]
+    strength: "medium"
+
+  - text: "{killer}'s horse was lathered up this morning, been ridden hard at night"
+    supports_killer: ["Clara", "Flint", "Whistle"]
+    supports_motive: ["any"]
+    strength: "medium"
+
+  - text: "Seen {killer} practicing with their gun out behind the stables last week"
+    supports_killer: ["Clara", "Flint", "Whistle"]
+    supports_motive: ["planned", "preparation"]
+    strength: "medium"
+
+  - text: "{killer} asked me if I knew any way to get quick money out of town"
+    supports_killer: ["Clara", "Flint", "Whistle"]
+    supports_motive: ["debt", "escape"]
+    strength: "weak"
+
+  # Red herrings
+  - text: "Strange riders came through town last week, asking about the mine"
+    supports_killer: []
+    supports_motive: []
+    strength: "weak"
+
+# List of possible motives that can be randomly selected
+motives:
+  - debt
+  - revenge
+  - blackmail
+  - greed
+  - secret
+  - betrayal
+  - fear
+  - jealousy
+  - desperation
