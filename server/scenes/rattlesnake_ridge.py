@@ -43,7 +43,7 @@ Thompson.""")
 
         # Have the conversation
         conversation = make_conversation(game_data, [selected_actor, game_data.player])
-        yield from have_conversation(conversation, 1)
+        yield from have_conversation(conversation, 6)
 
         if len(remaining_actors) > 0:
             yield MessageDelayCommand(
@@ -88,7 +88,7 @@ def second_day_morning_scene(game_data: GameData) -> SceneReturn_t:
 
     # Have a conversation
     conversation = make_conversation(game_data, actors)
-    yield from have_conversation(conversation, 1)
+    yield from have_conversation(conversation, 12)
 
     yield SceneEndCommand(
         """\nA sudden gunshot rings out, interrupting your conversation. The \
@@ -130,7 +130,7 @@ def final_confrontation_scene(game_data: GameData) -> SceneReturn_t:
     conv = copy(game_data.actors) + [game_data.player]
     conversation = make_conversation(game_data, conv)
 
-    responses_left = 1
+    responses_left = 13
     responses = conversation.begin_conversation()
 
     while responses_left > 0:
