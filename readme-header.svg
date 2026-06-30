@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" width="960" height="300" role="img" aria-label="Rattlesnake Ridge line banner">
+  <title>Rattlesnake Ridge line banner</title>
+  <desc>Serif Rattlesnake Ridge wordmark over a setting sun and layered ridge horizon on a CRT screen.</desc>
+  <defs>
+    <radialGradient id="rl-bg" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#123a33"/>
+      <stop offset="60%" stop-color="#081E1A"/>
+      <stop offset="100%" stop-color="#020403"/>
+    </radialGradient>
+    <radialGradient id="rl-sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffdf94"/>
+      <stop offset="58%" stop-color="#f3b44a"/>
+      <stop offset="100%" stop-color="#f3b44a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rl-sweep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c7ffdb" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#c7ffdb" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#c7ffdb" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="rl-scan" x="0" y="0" width="3" height="2" patternUnits="userSpaceOnUse">
+      <rect width="3" height="1" fill="#121010" opacity="0"/>
+      <rect width="3" height="1" y="1" fill="#000000" opacity="0.14"/>
+      <rect width="1" height="2" fill="#ff0000" opacity="0.03"/>
+      <rect width="1" height="2" x="1" fill="#00ff00" opacity="0.01"/>
+      <rect width="1" height="2" x="2" fill="#0000ff" opacity="0.03"/>
+    </pattern>
+    <filter id="rl-glow" x="-15%" y="-35%" width="130%" height="170%">
+      <feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="rl-soft-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="rl-panel"><rect x="0" y="0" width="640" height="200" rx="8"/></clipPath>
+  </defs>
+
+  <style>
+    .rl-kicker { fill: #f3c45b; font: 700 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 3px; }
+    .rl-wm { fill: #d8ffdf; font: 700 43px "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif; letter-spacing: 3.5px; }
+    .rl-sub { fill: #5f8f73; font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 2px; }
+    .rl-ridge-far { fill: #2f6e55; opacity: 0.5; }
+    .rl-ridge-mid { fill: #1b4d3d; opacity: 0.72; }
+    .rl-ridge-near { fill: #0d2c21; }
+    .rl-ridge-edge { fill: none; stroke: #aaf0be; stroke-opacity: 0.16; stroke-width: 1; }
+  </style>
+
+  <g clip-path="url(#rl-panel)">
+    <rect width="640" height="200" fill="url(#rl-bg)"/>
+    <circle cx="482" cy="137" r="48" fill="url(#rl-sun)" filter="url(#rl-soft-glow)"/>
+
+    <path class="rl-ridge-far" d="M0 200 L0 128 L70 96 L134 123 L205 76 L276 119 L346 70 L422 113 L500 61 L582 112 L640 84 L640 200 Z"/>
+    <path class="rl-ridge-edge" d="M0 128 L70 96 L134 123 L205 76 L276 119 L346 70 L422 113 L500 61 L582 112 L640 84"/>
+    <path class="rl-ridge-mid" d="M0 200 L0 154 L82 118 L152 145 L228 105 L302 149 L386 111 L462 146 L538 116 L612 150 L640 132 L640 200 Z"/>
+    <path class="rl-ridge-edge" d="M0 154 L82 118 L152 145 L228 105 L302 149 L386 111 L462 146 L538 116 L612 150 L640 132"/>
+    <path class="rl-ridge-near" d="M0 200 L0 174 L74 147 L133 166 L206 139 L274 171 L345 148 L415 172 L489 146 L562 171 L640 143 L640 200 Z"/>
+    <path class="rl-ridge-edge" d="M0 174 L74 147 L133 166 L206 139 L274 171 L345 148 L415 172 L489 146 L562 171 L640 143"/>
+
+    <text class="rl-kicker" x="320" y="61" text-anchor="middle">WELCOME TO</text>
+    <text class="rl-wm" x="320" y="101" text-anchor="middle" filter="url(#rl-glow)">RATTLESNAKE RIDGE</text>
+    <text class="rl-sub" x="320" y="124" text-anchor="middle">FOUR SUSPECTS &#183; ONE TRUTH</text>
+
+    <rect width="640" height="200" fill="url(#rl-scan)" pointer-events="none"/>
+    <rect x="0" y="-120" width="640" height="100" fill="url(#rl-sweep)" pointer-events="none">
+      <animate attributeName="y" dur="7s" repeatCount="indefinite" values="-120;200"/>
+    </rect>
+  </g>
+  <rect x="0.5" y="0.5" width="639" height="199" rx="8" fill="none" stroke="#0a0f0e" stroke-width="1"/>
+</svg>

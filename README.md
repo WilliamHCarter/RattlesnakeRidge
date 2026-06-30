@@ -1,4 +1,6 @@
-# Rattlesnake Ridge
+<div align="center">
+  <img src="readme-header.svg" width="600" alt="Rattlesnake Ridge">
+</div>
 
 > Multi-agent ML mystery game, powered by LangChain
 
